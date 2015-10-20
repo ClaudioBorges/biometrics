@@ -139,10 +139,12 @@ public class BioServer {
         Biometrics bio = null;
         
         try {            
+            dbgMsg("Openning Biometrics...");
             bio = new Biometrics("C:\\Teste\\biodb.db");
             if (bio.openScanner() == false)
                 throw new IOException("Finger Scanner not found.");            
             
+            dbgMsg("Openning server port...");
             socket = new ServerSocket(SERVER_PORT);
             dbgMsg("Server listenning to: " + SERVER_PORT);
                         
@@ -166,6 +168,9 @@ public class BioServer {
             } catch (IOException ex) {
                 Logger.getLogger(
                         BioServer.class.getName()).log(Level.SEVERE, null, ex);
+            } finally {
+                socket = null;
+                bio = null;
             }
         }
     }
@@ -178,11 +183,21 @@ public class BioServer {
         
         while (true) {
             try {
+                bioServer.dbgMsg("System running...");
                 bioServer.run();
 
             } catch (Exception ex) {
                 Logger.getLogger(
                         BioServer.class.getName()).log(Level.SEVERE, null, ex); 
+            }
+            
+            bioServer.dbgMsg("Sleeping...");
+            
+            try {            
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(BioServer.class.getName())
+                        .log(Level.SEVERE, null, ex);
             }
         }
     }

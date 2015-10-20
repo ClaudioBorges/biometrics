@@ -119,6 +119,7 @@ public class Biometrics {
 
         biometricClient.setFingerScanner((NFScanner) devices.get(selection));
         
+        
         return true;
     }
     
@@ -126,8 +127,16 @@ public class Biometrics {
         if (biometricClient != null) biometricClient.dispose();
         if (bioEntity != null) bioEntity.close();
         
-        NLicense.releaseComponents(bioComponents);
-        NCore.shutdown();
+        biometricClient = null;
+        bioEntity = null;
+        
+        try {
+            NLicense.releaseComponents(bioComponents);
+            NCore.shutdown();
+        } catch (IOException ex) {
+            Logger.getLogger(Biometrics.class.getName())
+                .log(Level.SEVERE, null, ex);
+        }
     }
     
     public BIOMETRIC_STATE verifyBiometric(String cpf) {
@@ -137,17 +146,22 @@ public class Biometrics {
             NSubject registered = bioEntity.getPerson(cpf);
             if (registered != null) {
                                 
-                NSubject cadidate = enrollFinger();
-                NBiometricStatus status = verifyFinger(registered, cadidate);
-                
-                if (status == NBiometricStatus.OK) {
-                    state = BIOMETRIC_STATE.MATCHED;
-                }
-                else if (status == NBiometricStatus.MATCH_NOT_FOUND) {
-                    state = BIOMETRIC_STATE.NOT_MATCHED;
-                }
+                NSubject candidate = enrollFinger();
+                if (candidate == null)
+                    state = BIOMETRIC_STATE.TIMEOUT;
                 else {
-                    state = BIOMETRIC_STATE.UNKNOWN;
+                    NBiometricStatus status 
+                            = verifyFinger(registered, candidate);
+
+                    if (status == NBiometricStatus.OK) {
+                        state = BIOMETRIC_STATE.MATCHED;
+                    }
+                    else if (status == NBiometricStatus.MATCH_NOT_FOUND) {
+                        state = BIOMETRIC_STATE.NOT_MATCHED;
+                    }
+                    else {
+                        state = BIOMETRIC_STATE.UNKNOWN;
+                    }
                 }
             }
             else {

@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import javax.swing.text.MaskFormatter;
 
 import bioclient.BioClient;
+import cpflib.CPFLib;
 import java.awt.Color;
 /**
  *
@@ -108,8 +109,8 @@ public class BioForm extends javax.swing.JFrame {
 
     private void jButton_RegActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_RegActionPerformed
         // TODO add your handling code here:
-        String cpf = ValidaCPF.formatCPF_onlyNumbers(jCPF.getText());
-        boolean valido = ValidaCPF.isCPF(cpf);
+        String cpf = CPFLib.formatCPF_onlyNumbers(jCPF.getText());
+        boolean valido = CPFLib.isCPF(cpf);
         
         if (valido == false) {
             ihmInvalidCpf();

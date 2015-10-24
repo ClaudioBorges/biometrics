@@ -6,6 +6,8 @@
 package bioserver;
 
 import bioconverter.Biometrics;
+import cpflib.CPFLib;
+import encoder.EncControl;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -16,6 +18,7 @@ import java.net.SocketTimeoutException;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.IIOException;
 
 /**
  *
@@ -51,27 +54,37 @@ public class BioServer {
             String cpf, 
             Biometrics bio) {
         
+        BIO_CHECK_ERROR err = BIO_CHECK_ERROR.UNKNOWN_CPF;
+         
         switch (bio.verifyBiometric(cpf)) {
         case MATCHED:
-            return BIO_CHECK_ERROR.MATCHED;
+            err = BIO_CHECK_ERROR.MATCHED;
+            break;
 
         case NOT_MATCHED:
-            return BIO_CHECK_ERROR.NOT_MATCHED;
-
+            err = BIO_CHECK_ERROR.NOT_MATCHED;
+            break;
+            
         case UNKNOWN_CPF:
-            return BIO_CHECK_ERROR.UNKNOWN_CPF;
-
+            err = BIO_CHECK_ERROR.UNKNOWN_CPF;
+            break;
+            
         case TIMEOUT:
-            return BIO_CHECK_ERROR.TIMEOUT;
-
+            err =BIO_CHECK_ERROR.TIMEOUT;
+            break;
+            
         case UNKNOWN:
         default:
-            return BIO_CHECK_ERROR.UNKNOWN;
-        }       
+            err = BIO_CHECK_ERROR.UNKNOWN;
+            break;
+        }
+        
+        return err;
     }
 
     public void bioHandleClient(
-            Socket clientSocket, Biometrics bio) {
+        Socket clientSocket, Biometrics bio) {
+        
         try {
             PrintWriter out =
                     new PrintWriter(
@@ -100,7 +113,7 @@ public class BioServer {
                     }
 
                     dbgMsg("CPF: " + fromClient);
-
+                    
                     BIO_CHECK_ERROR result;
                     result = validateBiometric(fromClient, bio);
 
@@ -169,11 +182,13 @@ public class BioServer {
                 Logger.getLogger(
                         BioServer.class.getName()).log(Level.SEVERE, null, ex);
             } finally {
-                socket = null;
-                bio = null;
+                socket  = null;
+                bio     = null;
             }
         }
     }
+    
+    
    
     /**
      * @param args the command line arguments

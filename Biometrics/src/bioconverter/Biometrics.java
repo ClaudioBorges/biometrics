@@ -139,8 +139,38 @@ public class Biometrics {
         }
     }
     
+    public boolean isEnrolled(String cpf) {
+        boolean state = false;
+        
+        try {
+            NSubject registered = bioEntity.getPerson(cpf);
+            if (registered != null)
+                state = true;
+            
+        } catch (Exception ex) {
+            Logger.getLogger(Biometrics.class.getName())
+                    .log(Level.SEVERE, null, ex);
+        }
+        
+        return state;
+    }
+    
+    public boolean isCandidate(String cpf) {
+        boolean state = false;
+        
+        try {
+            state = bioEntity.isCandidate(cpf);
+            
+        } catch (Exception ex) {
+            Logger.getLogger(Biometrics.class.getName())
+                    .log(Level.SEVERE, null, ex);
+        }
+        
+        return state;
+    }
+    
     public BIOMETRIC_STATE verifyBiometric(String cpf) {
-        BIOMETRIC_STATE state;
+        BIOMETRIC_STATE state = BIOMETRIC_STATE.UNKNOWN;
         
         try {
             NSubject registered = bioEntity.getPerson(cpf);

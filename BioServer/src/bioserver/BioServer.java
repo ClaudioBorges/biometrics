@@ -6,8 +6,6 @@
 package bioserver;
 
 import bioconverter.Biometrics;
-import cpflib.CPFLib;
-import encoder.EncControl;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -18,7 +16,6 @@ import java.net.SocketTimeoutException;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.imageio.IIOException;
 
 /**
  *

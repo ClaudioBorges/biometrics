@@ -30,13 +30,14 @@ public class BioClient {
     };
     
     public enum BIO_CHECK_ERROR {
-      MATCHED,
-      NOT_MATCHED,
-      UNKNOWN_CPF,
-      TIMEOUT,
-      CONNECTION_LOST,
-      CONNECTION_UNREACHED,
-      UNKNOWN
+        MATCHED,
+        NOT_MATCHED,
+        CREDENTIAL_FAIL,
+        UNKNOWN_CPF,
+        TIMEOUT,
+        CONNECTION_LOST,
+        CONNECTION_UNREACHED,
+        UNKNOWN
     };
   
     private static final int SERVER_PORT = 1765;
@@ -82,6 +83,7 @@ public class BioClient {
                         dbgMsg(clientSM.toString());
                         
                         out.println(reqBioCpf);
+                        out.println("C");
                         out.println(cpf);
 
                         clientSM = BIO_CLIENT_SM.WAITING_REQ_FROM_CPF;

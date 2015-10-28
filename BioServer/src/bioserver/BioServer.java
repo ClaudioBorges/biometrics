@@ -5,15 +5,20 @@
  */
 package bioserver;
 
+import bioconverter.BioEntity.PERSON_CREDENTIAL;
 import bioconverter.Biometrics;
 import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.sql.SQLException;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,19 +28,16 @@ import java.util.logging.Logger;
  */
 public class BioServer {
 
-    private final int SERVER_PORT = 1765;
-    private final String HOSTNAME = "localhost";
-
-    private final String init = "HELLO";
-    private final String ping = "PING";
-    private final String pong = "PONG";
-    private final String reqBioCpf = "REQ_biometric_from_cpf:";
-    private final String rspBioCpf = "RSP_biometric_from_cpf:";
-    private final String eoc = "BYE";
+    private static final String configPath = "C:\\Teste\\Configs\\BioServerConfig.properties";
+    
+    private static final int SERVER_PORT = 1765;
+    private static final String reqBioCpf = "REQ_biometric_from_cpf:";
+    private static final String rspBioCpf = "RSP_biometric_from_cpf:";
     
     public enum BIO_CHECK_ERROR {
         MATCHED,
         NOT_MATCHED,
+        CREDENTIAL_FAIL,
         UNKNOWN_CPF,
         TIMEOUT,
         CONNECTION_LOST,
@@ -47,34 +49,90 @@ public class BioServer {
         System.out.println("[DEBUG] " + s);
     }
     
+    private class PropertyValues {
+        private String bioDB = null;
+        private String bioLoggerDB = null;
+        private int source = 0;
+        
+        public String getBioDB() {
+            return this.bioDB;
+        }
+        
+        public String getBioLoggerDB() {
+            return this.bioLoggerDB;
+        }
+        
+        public int getSource() {
+            return this.source;
+        }
+        
+        public void updatePropValues(String filename) throws IOException {
+            InputStream is = null;
+                    
+            try {
+                Properties prop = new Properties();
+                is = new FileInputStream(filename);
+                
+                if (is != null) {
+                    prop.load(is);
+                } else {
+                    throw new FileNotFoundException(
+                            "property file '" + filename + "' not found");
+                }
+                
+                bioDB = prop.getProperty("Biometric_DB");
+                bioLoggerDB = prop.getProperty("Biometric_Logger_DB");
+                source = Integer.parseInt(prop.getProperty("Biometric_Source"));
+            } catch (IOException | NumberFormatException ex) {
+                Logger.getLogger(
+                        BioServer.class.getName()).log(Level.SEVERE, null, ex);
+            } finally {
+                if (is != null) is.close();
+            }
+        }
+    }
+    
     private BIO_CHECK_ERROR validateBiometric(
-            String cpf, 
+            String sCredential,
+            String cpf,
             Biometrics bio) {
         
-        BIO_CHECK_ERROR err = BIO_CHECK_ERROR.UNKNOWN_CPF;
+        BIO_CHECK_ERROR err = BIO_CHECK_ERROR.UNKNOWN;
          
-        switch (bio.verifyBiometric(cpf)) {
-        case MATCHED:
-            err = BIO_CHECK_ERROR.MATCHED;
-            break;
+        try {
+            PERSON_CREDENTIAL credential 
+                    =  PERSON_CREDENTIAL.getEnum(sCredential);
+            
+            switch (bio.verifyBiometric(cpf, credential)) {
+            case MATCHED:
+                err = BIO_CHECK_ERROR.MATCHED;
+                break;
 
-        case NOT_MATCHED:
-            err = BIO_CHECK_ERROR.NOT_MATCHED;
-            break;
-            
-        case UNKNOWN_CPF:
-            err = BIO_CHECK_ERROR.UNKNOWN_CPF;
-            break;
-            
-        case TIMEOUT:
-            err =BIO_CHECK_ERROR.TIMEOUT;
-            break;
-            
-        case UNKNOWN:
-        default:
-            err = BIO_CHECK_ERROR.UNKNOWN;
-            break;
+            case NOT_MATCHED:
+                err = BIO_CHECK_ERROR.NOT_MATCHED;
+                break;
+
+            case UNKNOWN_CPF:
+                err = BIO_CHECK_ERROR.UNKNOWN_CPF;
+                break;
+
+            case TIMEOUT:
+                err = BIO_CHECK_ERROR.TIMEOUT;
+                break;
+
+            case WRONG_CREDENTIAL:
+                err = BIO_CHECK_ERROR.CREDENTIAL_FAIL;
+                break;
+
+            case UNKNOWN:
+            default:
+                err = BIO_CHECK_ERROR.UNKNOWN;
+                break;
+            }
+        } catch (IllegalArgumentException ex) {
+            err = BIO_CHECK_ERROR.CREDENTIAL_FAIL;
         }
+
         
         return err;
     }
@@ -91,28 +149,20 @@ public class BioServer {
                     new InputStreamReader(
                             clientSocket.getInputStream()));
 
-            out.println(init);
-
             String fromClient;
 
             if ((fromClient = in.readLine()) != null) {
-                if (fromClient.contains(eoc)) {
-                    clientSocket.close();
-                    dbgMsg(eoc);
-                }
-                else if (fromClient.equals(reqBioCpf)) {
+                if (fromClient.equals(reqBioCpf)) {
                     dbgMsg(reqBioCpf);
 
-                    fromClient = in.readLine();
-                    if (fromClient.contains(eoc)) {
-                        clientSocket.close();
-                        dbgMsg(eoc);
-                    }
-
-                    dbgMsg("CPF: " + fromClient);
+                    String credential = in.readLine();
+                    dbgMsg("Credential: " + credential);
+                    
+                    String cpf = in.readLine();
+                    dbgMsg("CPF: " + cpf);
                     
                     BIO_CHECK_ERROR result;
-                    result = validateBiometric(fromClient, bio);
+                    result = validateBiometric(credential, cpf, bio);
 
                     out.println(rspBioCpf);
                     out.println(result);
@@ -147,10 +197,18 @@ public class BioServer {
         ServerSocket socket = null;
         Socket clientSocket = null;
         Biometrics bio = null;
+        PropertyValues propVals = null;
         
         try {            
             dbgMsg("Openning Biometrics...");
-            bio = new Biometrics("C:\\Teste\\biodb.db");
+            
+            propVals = new PropertyValues();
+            propVals.updatePropValues(configPath);           
+            
+            bio = new Biometrics(
+                    propVals.getBioDB(),
+                    propVals.getBioLoggerDB(),
+                    propVals.getSource());
             if (bio.openScanner() == false)
                 throw new IOException("Finger Scanner not found.");            
             
@@ -185,8 +243,6 @@ public class BioServer {
         }
     }
     
-    
-   
     /**
      * @param args the command line arguments
      */

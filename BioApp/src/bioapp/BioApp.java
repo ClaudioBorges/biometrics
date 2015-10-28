@@ -5,6 +5,7 @@
  */
 package bioapp;
 
+import bioconverter.BioEntity;
 /**
  *
  * @author Claudio

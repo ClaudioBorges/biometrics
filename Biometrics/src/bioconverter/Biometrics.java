@@ -7,7 +7,8 @@ package bioconverter;
 
 import java.io.IOException;
 import java.util.EnumSet;
-import java.util.Scanner;
+
+import bioconverter.BioEntity.PERSON_CREDENTIAL;
 
 import com.neurotec.biometrics.NBiometricStatus;
 import com.neurotec.biometrics.NFTemplate;
@@ -40,14 +41,16 @@ import java.util.logging.Logger;
 public class Biometrics {
     
     public enum BIOMETRIC_STATE {
-        MATCHED,
-        NOT_MATCHED,
+        UNKNOWN,
         UNKNOWN_CPF,
+        WRONG_CREDENTIAL,
         TIMEOUT,
-        UNKNOWN
+        NOT_MATCHED,
+        MATCHED,        
     };
 
     private BioEntity bioEntity = null;    
+    private BioLogger bioLogger = null;
     private final String bioComponents = 
             "Biometrics.Standards.FingerTemplates"
             + ",Biometrics.FingerExtraction"
@@ -57,11 +60,12 @@ public class Biometrics {
     
     private final int enrollFingerTimeoutMs = 15000;
     
-    public Biometrics(String fileDB) 
+    public Biometrics(String fileDB, String logDB, int logSourceID) 
             throws ClassNotFoundException, SQLException, IOException {
         this.biometricClient = null;
         
         bioEntity = new BioEntity(fileDB);
+        bioLogger = new BioLogger(logDB, logSourceID);
         
         LibraryManager.initLibraryPath(); 
         
@@ -126,9 +130,11 @@ public class Biometrics {
     public void close() throws IOException {
         if (biometricClient != null) biometricClient.dispose();
         if (bioEntity != null) bioEntity.close();
+        if (bioLogger != null) bioLogger.close();
         
         biometricClient = null;
         bioEntity = null;
+        bioLogger = null;
         
         try {
             NLicense.releaseComponents(bioComponents);
@@ -169,39 +175,60 @@ public class Biometrics {
         return state;
     }
     
-    public BIOMETRIC_STATE verifyBiometric(String cpf) {
+    public BIOMETRIC_STATE verifyBiometric(
+            String cpf, PERSON_CREDENTIAL credential) {
+        
         BIOMETRIC_STATE state = BIOMETRIC_STATE.UNKNOWN;
+        PERSON_CREDENTIAL dbCredential = PERSON_CREDENTIAL.UNKNOWN;
         
         try {
             NSubject registered = bioEntity.getPerson(cpf);
             if (registered != null) {
-                                
-                NSubject candidate = enrollFinger();
-                if (candidate == null)
-                    state = BIOMETRIC_STATE.TIMEOUT;
-                else {
-                    NBiometricStatus status 
-                            = verifyFinger(registered, candidate);
+                
+                dbCredential = bioEntity.getCredential(cpf);
+                
+                if ((credential != PERSON_CREDENTIAL.UNKNOWN)
+                     && (credential == dbCredential)) {
 
-                    if (status == NBiometricStatus.OK) {
-                        state = BIOMETRIC_STATE.MATCHED;
-                    }
-                    else if (status == NBiometricStatus.MATCH_NOT_FOUND) {
-                        state = BIOMETRIC_STATE.NOT_MATCHED;
+                    NSubject candidate = enrollFinger();
+                    if (candidate == null) {
+                        
+                        state = BIOMETRIC_STATE.TIMEOUT;
+                        bioLogger.addBioEvent(cpf, state);
                     }
                     else {
-                        state = BIOMETRIC_STATE.UNKNOWN;
+                        NBiometricStatus status 
+                                = verifyFinger(registered, candidate);
+
+                        if (status == NBiometricStatus.OK) {
+                            state = BIOMETRIC_STATE.MATCHED;
+                        }
+                        else if (status == NBiometricStatus.MATCH_NOT_FOUND) {
+                            state = BIOMETRIC_STATE.NOT_MATCHED;
+                        }
+                        else {
+                            state = BIOMETRIC_STATE.UNKNOWN;
+                        }
                     }
+                }
+                else {
+                    state = BIOMETRIC_STATE.WRONG_CREDENTIAL;
                 }
             }
             else {
                 state = BIOMETRIC_STATE.UNKNOWN_CPF;
             }
+            
+            bioLogger.addBioEvent(cpf, credential, dbCredential, state);
+            System.out.println("addBioEvent");
+            
         } catch (Exception ex) {
             Logger.getLogger(Biometrics.class.getName())
                     .log(Level.SEVERE, null, ex);
 
             state = BIOMETRIC_STATE.UNKNOWN;
+            
+            bioLogger.addBioEvent(cpf, state);
         }
         
         return state;
@@ -546,7 +573,10 @@ public class Biometrics {
      * @throws java.io.IOException
      */
     public static void main(String[] args) throws IOException, Throwable {
-        Biometrics biometrics = new Biometrics("C:\\Teste\\biodb.db");
+        Biometrics biometrics = new Biometrics(
+                "C:\\Teste\\biodb.db",
+                "C:\\Teste\\bioLogger.db",
+                0);
         
         biometrics.debugMakeBioEntity();
         biometrics.close();

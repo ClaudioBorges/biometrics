@@ -22,7 +22,8 @@ public class BioEntity {
     public enum PERSON_CREDENTIAL {
         CANDIDATE("C"),
         EXAMINER("E"),
-        PRESIDENT("P");
+        PRESIDENT("P"),
+        UNKNOWN("U");
         
         private final String text;
                
@@ -33,6 +34,20 @@ public class BioEntity {
         @Override        
         public String toString() {
             return text;
+        }
+        
+        public String getValue() {
+            return text;
+        }
+        
+        public static PERSON_CREDENTIAL getEnum(String value) {
+            for(PERSON_CREDENTIAL v : values()) {
+                if(v.getValue().equalsIgnoreCase(value)) {
+                    return v;
+                }
+            }
+            
+            throw new IllegalArgumentException();
         }
     }
     
@@ -60,7 +75,7 @@ public class BioEntity {
                     "CREATE TABLE IF NOT EXISTS People ("
                         + "cpf varchar(14) PRIMARY KEY NOT NULL,"
                         + "name varchar(70) NOT NULL,"
-                        + "data BLOB)"
+                        + "data BLOB,"
                         + "credential TEXT CHECK(credential IN ('C', 'I', 'P')) NOT NULL DEFAULT 'C';");
         } catch (SQLException e) {
         }
@@ -154,14 +169,14 @@ public class BioEntity {
     
     public PERSON_CREDENTIAL getCredential(String cpf) {
         String query = "SELECT credential FROM People WHERE cpf = \"" + cpf + "\";";
-        PERSON_CREDENTIAL credential = PERSON_CREDENTIAL.CANDIDATE;
+        PERSON_CREDENTIAL credential = PERSON_CREDENTIAL.UNKNOWN;
         
         try (Statement stmt = this.conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
             
             if (rs.next())
-                credential = PERSON_CREDENTIAL.valueOf(rs.getString(1));
-        } catch (SQLException ex) {
+                credential = PERSON_CREDENTIAL.getEnum(rs.getString(1));
+        } catch (SQLException | IllegalArgumentException ex) {
             Logger.getLogger(
                 BioEntity.class.getName()).log(Level.SEVERE, null, ex);
         }

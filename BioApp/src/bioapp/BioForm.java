@@ -14,24 +14,126 @@ import java.util.logging.Logger;
 import javax.swing.text.MaskFormatter;
 
 import bioclient.BioClient;
+import com.github.sarxos.webcam.Webcam;
+import com.github.sarxos.webcam.WebcamPanel;
+import com.github.sarxos.webcam.WebcamResolution;
 import cpflib.CPFLib;
 import java.awt.Color;
+import java.awt.image.BufferedImage;
 /**
  *
  * @author Claudio
  */
-public class BioForm extends javax.swing.JFrame {
+public class BioForm 
+    extends javax.swing.JFrame {
 
     private MaskFormatter cpfFormatter = null;
     private boolean isRegisteringOutput = false;
     private final Timer timer = new Timer();
     
+    private Webcam webcam = null;
+    private WebcamPanel webcamPanel = null;
+    private BufferedImage webcamImage = null;
+    
     /**
      * Creates new form BioForm
      */
     public BioForm() {
-        initComponents();
+        super();
         
+        openWebcam(Webcam.getDefault());
+        
+        myInitComponents();
+    }
+    
+    public void openWebcam(Webcam webcam) {
+        this.webcam = webcam;
+        this.webcam.setViewSize(WebcamResolution.VGA.getSize());
+        this.webcam.open();
+        
+        webcamPanel = new WebcamPanel(webcam);
+        webcamPanel.setFPSDisplayed(false);
+        webcamPanel.setDisplayDebugInfo(false);
+        webcamPanel.setImageSizeDisplayed(false);
+        webcamPanel.setFPSLimited(true);
+        webcamPanel.setFPSLimit(20);
+        webcamPanel.setMirrored(false);
+        webcamPanel.start();
+    }
+    
+    public void takePicture() {
+        
+    }
+    
+    public void closeWebcam() {
+        this.webcam.close();
+        this.webcam = null;
+    }
+    
+    void myInitComponents() {
+        jLabel1 = new javax.swing.JLabel();
+        try {
+            cpfFormatter = new MaskFormatter("###.###.###-##");
+            cpfFormatter.setValidCharacters("0123456789");
+        }
+        catch (ParseException ex) {
+            Logger.getLogger(BioForm.class.getName())
+            .log(Level.SEVERE, null, ex);
+        }
+        jCPF = new javax.swing.JFormattedTextField(cpfFormatter);
+        jLabelMsg = new javax.swing.JLabel();
+        jButton_Reg = new javax.swing.JButton();
+
+        jLabel1.setText("jLabel1");
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jCPF.setText("");
+        jCPF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCPFActionPerformed(evt);
+            }
+        });
+
+        jLabelMsg.setText("Aguardando CPF...");
+
+        jButton_Reg.setText("Registrar biometria");
+        jButton_Reg.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton_RegActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(webcamPanel)
+                    .addComponent(jCPF)
+                    .addComponent(jButton_Reg, javax.swing.GroupLayout.DEFAULT_SIZE, 607, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(104, 104, 104)
+                        .addComponent(jLabelMsg, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(webcamPanel)
+                .addGap(18, 18, 18)
+                .addComponent(jCPF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jButton_Reg)
+                .addGap(18, 18, 18)
+                .addComponent(jLabelMsg, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(4, Short.MAX_VALUE))
+        );
+
+        pack();
     }
 
     /**
@@ -84,20 +186,22 @@ public class BioForm extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jCPF)
-                    .addComponent(jButton_Reg, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
-                    .addComponent(jLabelMsg, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jButton_Reg, javax.swing.GroupLayout.DEFAULT_SIZE, 607, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(104, 104, 104)
+                        .addComponent(jLabelMsg, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(55, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jCPF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jButton_Reg)
                 .addGap(18, 18, 18)
                 .addComponent(jLabelMsg, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(26, Short.MAX_VALUE))
+                .addContainerGap(72, Short.MAX_VALUE))
         );
 
         pack();

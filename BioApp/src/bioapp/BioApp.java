@@ -4,8 +4,6 @@
  * and open the template in the editor.
  */
 package bioapp;
-
-import bioconverter.BioEntity;
 /**
  *
  * @author Claudio
@@ -18,8 +16,10 @@ public class BioApp {
     public static void main(String[] args) {
         
         // TODO code application logic here        
-        BioForm bioForm = new BioForm();
-        bioForm.setVisible(true);
+        BioAppForm bioAppForm = new BioAppForm(
+                "C:\\Teste\\BioPresidentLog.db", 
+                "C:\\Teste\\");
+        bioAppForm.setVisible(true);
     }
     
 }

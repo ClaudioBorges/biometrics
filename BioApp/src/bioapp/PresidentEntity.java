@@ -5,7 +5,7 @@
  */
 package bioapp;
 
-import bioconverter.BioEntity;
+import static cpflib.CPFLib.formatCPF_onlyNumbers;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -119,7 +119,7 @@ public class PresidentEntity {
         }
     }
     
-    public void registerCandidateIn(String cpf, String photoPath) {
+    public void registerCandidateIn(String cpf, String photo) {
         try {
             Date date = new Date();
             
@@ -129,7 +129,7 @@ public class PresidentEntity {
             
             stmt.setString(1, getDateTime(date));            
             stmt.setInt(2, CANDIDATE_STATE.IN_TEST.ordinal());
-            stmt.setString(3, photoPath);
+            stmt.setString(3, photo);
             stmt.setString(4, cpf);
             stmt.execute();
             
@@ -156,6 +156,22 @@ public class PresidentEntity {
             Logger.getLogger(PresidentEntity.class.getName())
                     .log(Level.SEVERE, null, ex);
         }          
+    }
+    
+    public void updatePhoto(String cpf, String photo) {
+        try {
+            PreparedStatement stmt = this.conn.prepareStatement(
+                    "UPDATE BioPresidentEntity SET photo = ?"
+                    + "WHERE cpf = ? ");
+            
+            stmt.setString(1, photo);
+            stmt.setString(2, cpf);
+            stmt.execute();
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(PresidentEntity.class.getName())
+                    .log(Level.SEVERE, null, ex);
+        }         
     }
     
     public CANDIDATE_STATE getCandidateState(String cpf) {
@@ -187,6 +203,17 @@ public class PresidentEntity {
         }
         
         return state;
+    }
+    
+    public ResultSet getCandidateFromCPF(String cpf) throws SQLException {
+        Statement stmt = this.conn.createStatement();
+        String query = "SELECT * from BioPresidentEntity WHERE cpf = " 
+                        + formatCPF_onlyNumbers(cpf)
+                        + ";";
+        
+        ResultSet rs = stmt.executeQuery(query);
+        
+        return rs;
     }
     
     public ResultSet getAllCandidates() throws SQLException {

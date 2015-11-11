@@ -5,16 +5,9 @@
  */
 package bioapp;
 
-import java.awt.BorderLayout;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.RowSorter;
 import javax.swing.table.DefaultTableModel;
@@ -25,20 +18,9 @@ import javax.swing.table.TableRowSorter;
  *
  * @author Claudio
  */
-public class PresidentEntityView extends JPanel {
+public class PresidentEntityView {
     
-    private final PresidentEntity entity;
-    private JScrollPane scrollPane = null;
-    private JTable table = null;
-    
-    public PresidentEntityView(PresidentEntity entity) {    
-        this.entity = entity;
-        
-        scrollPane = new JScrollPane();
-        add(scrollPane);
-    }
-    
-    void showResultSet(ResultSet rs) {
+    private static JTable showResultSet(ResultSet rs) {
         Vector<String> columnNames = new Vector();
         Vector<Vector<String>> data = new Vector();
 
@@ -63,7 +45,11 @@ public class PresidentEntityView extends JPanel {
                             row.addElement((String) o);
                         } else if (o instanceof Integer) {
                             row.addElement(((Integer) o).toString());                        
-                        }                    
+                        } else {
+                            row.addElement(new String(""));
+                        }
+                    } else {
+                        row.addElement(new String(""));
                     }
                 }
 
@@ -108,69 +94,76 @@ public class PresidentEntityView extends JPanel {
         RowSorter<TableModel> sorter = new TableRowSorter<>(model);
         newTable.setRowSorter(sorter);
         
-        if (table != null)
-            scrollPane.getViewport().remove(table);
-        scrollPane.getViewport().add(newTable);
-        table = newTable;
+        
+        return newTable;
+        //if (table != null)
+        //    scrollPane.getViewport().remove(table);
+        //scrollPane.getViewport().add(newTable);
+        //table = newTable;
     }
 
-    void showAllCandidates() {
+    public static JTable showAllCandidates(PresidentEntity entity) {
+        JTable table = null;
+        
         try {
             ResultSet rs = entity.getAllCandidates();
-            showResultSet(rs);
+            table = showResultSet(rs);
         } catch (Exception e) {
             System.out.println(e);
         }
+        
+        return table;
     }
     
-    void showNotVerifiedCandidates() {
+    public static JTable showNotVerifiedCandidates(PresidentEntity entity) {
+        JTable table = null;
+        
         try {
             ResultSet rs = entity.getNotVerifiedCandidates();
-            showResultSet(rs);
+            table = showResultSet(rs);
         } catch (Exception e) {
             System.out.println(e);
         }
+        
+        return table;
     }
     
-    void showRegisteredCandidates() {
+    public static JTable showRegisteredCandidates(PresidentEntity entity) {
+        JTable table = null;
+        
         try {
             ResultSet rs = entity.getRegisteredCandidates();
-            showResultSet(rs);
+            table = showResultSet(rs);
         } catch (Exception e) {
             System.out.println(e);
         }
+        
+        return table;
     }
 
-    void showFinishedCandidates() {
+    public static JTable showFinishedCandidates(PresidentEntity entity) {
+        JTable table = null;
+        
         try {
             ResultSet rs = entity.getFinishedCandidates();
-            showResultSet(rs);
+            table = showResultSet(rs);
         } catch (Exception e) {
             System.out.println(e);
         }
+        
+        return table;
     }
     
-    public static void main(String[] args) {
-    javax.swing.SwingUtilities.invokeLater(() -> {
+    public static JTable showCandidateFromCPF(PresidentEntity entity, String cpf) {
+        JTable table = null;
+        
         try {
-            JFrame frame = new JFrame("any");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            PresidentEntity log1 = new PresidentEntity("C:\\Teste\\BioPresidentLog.db");
-            PresidentEntityView newContentPane = new PresidentEntityView(log1);
-            newContentPane.showFinishedCandidates();
-            newContentPane.showAllCandidates();
-            newContentPane.showNotVerifiedCandidates();            
-            newContentPane.showRegisteredCandidates();
-            newContentPane.setOpaque(true);
-            frame.setContentPane(newContentPane);
-            frame.pack();
-            frame.setVisible(true);
-        } catch (ClassNotFoundException | SQLException ex) {
-            Logger.getLogger(PresidentEntityView.class.getName())
-                    .log(Level.SEVERE, null, ex);
+            ResultSet rs = entity.getCandidateFromCPF(cpf);
+            table = showResultSet(rs);
+        } catch (Exception e) {
+            System.out.println(e);
         }
-    });
-
+        
+        return table;
     }
-
 }

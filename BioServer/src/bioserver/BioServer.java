@@ -28,7 +28,7 @@ import java.util.logging.Logger;
  */
 public class BioServer {
 
-    private static final String configPath = "C:\\Teste\\Configs\\BioServerConfig.properties";
+    private static final String configPath = "BioServerConfig.properties";
     
     private static final int SERVER_PORT = 1765;
     private static final String reqBioCpf = "REQ_biometric_from_cpf:";

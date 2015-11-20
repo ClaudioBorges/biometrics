@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.logging.Level;
@@ -54,11 +55,13 @@ public class BioAppForm extends javax.swing.JFrame {
     
     /**
      * Creates new form BioAppForm
+     * @param logFilename
+     * @param photoPath
      */
-    public BioAppForm(String logFilename, String imagePath) {
+    public BioAppForm(String logFilename, String photoPath) {
         try {
             this.entity = new PresidentEntity(logFilename);
-            this.photoPath = imagePath;
+            this.photoPath = photoPath;
             
             initMyComponents();
             
@@ -231,13 +234,23 @@ public class BioAppForm extends javax.swing.JFrame {
                     popup.show(e.getComponent(), e.getX(), e.getY());
                 }
             }
+            
+            private void createFolder(String path) {
 
+                File dir = new File(path);
+
+                if (dir.exists() == false) {
+                    dir.mkdirs(); 
+                }
+            }
+            
             private JPopupMenu createCandidatePopup(PresidentEntity entity) {
                 JPopupMenu popup = new JPopupMenu();
                 
                 ActionListener menuListener = (ActionEvent event) -> {
 
                     String completePhotoPath = photoPath + workingCpf + "\\";
+                    createFolder(completePhotoPath);
                     
                     switch (event.getActionCommand()) {
                         case sRegisterUsr_In:                            

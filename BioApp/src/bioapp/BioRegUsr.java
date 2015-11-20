@@ -10,16 +10,22 @@ import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamPanel;
 import com.github.sarxos.webcam.WebcamResolution;
 import java.awt.Color;
+import java.awt.LayoutManager;
 import java.awt.Window;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import javax.swing.GroupLayout;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -38,6 +44,8 @@ public final class BioRegUsr
     private javax.swing.JButton jBtn_TakePicture;
     private javax.swing.JLabel JLabel_Msg;
     private javax.swing.JOptionPane jOptPanel_Photo;
+    private javax.swing.JMenu jMenu_Devices;
+    private javax.swing.JMenuBar jMenuBar;
     
     private final REG_USR_MODE mode;
     private final String cpf;
@@ -45,8 +53,7 @@ public final class BioRegUsr
     private final String picturePath;
     
     private final Timer timer = new Timer();
-    private final Object myself;
-
+    
     private Webcam webcam = null;
     private WebcamPanel webcamPanel = null;
     private BufferedImage webcamImage = null;
@@ -59,6 +66,7 @@ public final class BioRegUsr
     private static final String sPicture_ConfirmTitle = "Confirmação";
     private static final String sPicture_Yes = "Sim";
     private static final String sPicture_No = "Não";
+    private static final String sPicture_Devices = "Dispositivos";
     
     private static final String sBiometric_Waiting = "Aguardando comando de biometria...";
     private static final String sBiometric_Working = "Aguardando biometria...";
@@ -68,6 +76,10 @@ public final class BioRegUsr
     private static final String sBiometric_Unknown = "Erro ao processar a informação de biometria";
     /**
      * Creates new form BioForm
+     * @param mode
+     * @param cpf
+     * @param entity
+     * @param picturePath
      */
     public BioRegUsr(
             REG_USR_MODE mode, 
@@ -76,8 +88,6 @@ public final class BioRegUsr
             String picturePath) {
         super();
         
-        this.myself = this;
-
         this.mode = mode;
         this.cpf = cpf;
         this.entity = entity;
@@ -89,10 +99,19 @@ public final class BioRegUsr
     }
 
     public void openWebcam(Webcam webcam) {
+        if (this.webcam == webcam)
+            return;
+        
+        closeWebcam();
+        
         this.webcam = webcam;
-        this.webcam.setViewSize(WebcamResolution.VGA.getSize());
-        this.webcam.open();
-
+        if (webcam != null) {
+            this.webcam.setViewSize(WebcamResolution.VGA.getSize());
+            this.webcam.open();
+        }
+        
+        WebcamPanel oldWebPanel = webcamPanel;
+  
         webcamPanel = new WebcamPanel(webcam);
         webcamPanel.setFPSDisplayed(false);
         webcamPanel.setDisplayDebugInfo(false);
@@ -101,6 +120,14 @@ public final class BioRegUsr
         webcamPanel.setFPSLimit(20);
         webcamPanel.setMirrored(false);
         webcamPanel.start();
+        
+        if (oldWebPanel != null) {
+            LayoutManager lm = getContentPane().getLayout();
+            if (lm instanceof GroupLayout) {
+                GroupLayout gl = (GroupLayout)lm;
+                gl.replace(oldWebPanel, webcamPanel);
+            }            
+        }
     }
     
     @Override
@@ -111,8 +138,10 @@ public final class BioRegUsr
     }
 
     public void closeWebcam() {
-        this.webcam.close();
-        this.webcam = null;
+        if (this.webcam != null) {
+            this.webcam.close();
+            this.webcam = null;
+        }
     }
 
     void myInitComponents() {
@@ -120,6 +149,8 @@ public final class BioRegUsr
         jBtn_RegUsr = new javax.swing.JButton();
         jBtn_TakePicture = new javax.swing.JButton();
         jOptPanel_Photo = new javax.swing.JOptionPane();
+        jMenu_Devices = new javax.swing.JMenu();
+        jMenuBar = new javax.swing.JMenuBar();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -168,6 +199,22 @@ public final class BioRegUsr
                 .addComponent(JLabel_Msg)                        
                 .addContainerGap(15, Short.MAX_VALUE))
         );
+        
+        jMenu_Devices.setText(sPicture_Devices);
+        jMenu_Devices.addMenuListener(new javax.swing.event.MenuListener() {
+            @Override
+            public void menuCanceled(javax.swing.event.MenuEvent evt) {
+            }
+            @Override
+            public void menuDeselected(javax.swing.event.MenuEvent evt) {
+            }
+            @Override
+            public void menuSelected(javax.swing.event.MenuEvent evt) {
+                jMenu_Devices_ActionListener(evt);
+            }
+        });
+        jMenuBar.add(jMenu_Devices);
+        setJMenuBar(jMenuBar);
 
         switch (this.mode) {
             case REG_INPUT:
@@ -193,6 +240,97 @@ public final class BioRegUsr
         
         pack();
     }
+    
+    private String[] getWebcamsNames() {
+        List<Webcam> listWebcam = Webcam.getWebcams();
+        
+        String[] strings = new String[listWebcam.size()];
+        
+        int i = 0;
+        for (Webcam webcam : Webcam.getWebcams()) {
+            strings[i++] = webcam.getName();
+        }
+        
+        return strings;
+    }
+    
+    private Webcam getWebcamByName(String name) {
+        for (Webcam webcam : Webcam.getWebcams()) {
+            if (webcam.getName().equals(name))
+                return webcam;
+        }        
+        return null;
+    }
+    
+    private void selectMenuDeviceItem(JMenuItem item) {
+        for (int i = 0; i < jMenu_Devices.getItemCount(); ++i) {
+            JMenuItem tmpItem = jMenu_Devices.getItem(i);
+
+            if (tmpItem == item) {
+                tmpItem.setSelected(true);
+            }
+            else {
+                tmpItem.setSelected(false);
+            }
+        }
+    }
+        
+    private void updateMenuDevicesSelection() {
+        if (this.webcam == null) {
+            selectMenuDeviceItem(null);
+        }
+        
+        for (int i = 0; i < jMenu_Devices.getItemCount(); ++i) {
+            JMenuItem item = jMenu_Devices.getItem(i);
+            
+            if (item.getText().equals(webcam.getName())) {
+                selectMenuDeviceItem(item);
+                break;
+            }
+        }
+    }
+    
+    private void updateMenuDevices() {        
+        String[] names = getWebcamsNames(); 
+        for (int i = 0; i < jMenu_Devices.getItemCount(); ++i) {
+            JMenuItem item = jMenu_Devices.getItem(i);
+            int j;
+            for (j = 0; j < names.length; ++j) {
+                if (item.getText().equals(names[j])) {
+                    names[j] = null;
+                    break;
+                }
+            }
+            if (j >= names.length) {
+                jMenu_Devices.remove(item);
+            }
+        }
+        
+        for (String name : names) {
+            if (name != null) {
+                JCheckBoxMenuItem item = new JCheckBoxMenuItem();
+                item.setSelected(false);
+                item.setText(name);
+                item.addActionListener(this::jMenu_Item_ActionListener);
+                jMenu_Devices.add(item);
+            }
+        }
+        
+        updateMenuDevicesSelection();
+    }
+    
+    private void jMenu_Devices_ActionListener(javax.swing.event.MenuEvent evt) {
+        updateMenuDevices();        
+    }
+    
+    private void jMenu_Item_ActionListener(java.awt.event.ActionEvent evt) {
+        if (evt.getSource() instanceof JCheckBoxMenuItem) {
+            JCheckBoxMenuItem item = (JCheckBoxMenuItem)evt.getSource();
+            
+            selectMenuDeviceItem(item);
+            openWebcam(getWebcamByName(item.getText()));
+        }
+    }
 
     private void jBtn_RegUsr_ActionPerformed(java.awt.event.ActionEvent evt) {
         jBtn_RegUsr.setEnabled(false);        
@@ -215,12 +353,12 @@ public final class BioRegUsr
         webcamPanel.pause();
         
         Object[] options = {sPicture_Yes, sPicture_No};
-        int choice = jOptPanel_Photo.showOptionDialog(
+        int choice = JOptionPane.showOptionDialog(
                         null, 
                         sPicture_Confirm, 
                         sPicture_ConfirmTitle,
-                        jOptPanel_Photo.YES_NO_OPTION, 
-                        jOptPanel_Photo.INFORMATION_MESSAGE,
+                        JOptionPane.YES_NO_OPTION, 
+                        JOptionPane.INFORMATION_MESSAGE,
                         null, 
                         options, 
                         options[0]);
@@ -255,7 +393,9 @@ public final class BioRegUsr
         err = BioClient.BIO_CHECK_ERROR.MATCHED;
         
         switch (err) {
-            case MATCHED:    
+            case MATCHED:
+                Object myself = this;
+                
                 JLabel_Msg.setBackground(Color.GREEN);
                 JLabel_Msg.setOpaque(true);
                 JLabel_Msg.setText(sBiometric_Matched + " - " + cpf);
@@ -272,9 +412,9 @@ public final class BioRegUsr
                                 break;
                             
                             case REG_OUTPUT:
-                                entity.finishCandidate(cpf);                              
+                                entity.finishCandidate(cpf);                                
                                 dispatchEvent(new WindowEvent(
-                                        (Window) myself, 
+                                        (Window)myself, 
                                         WindowEvent.WINDOW_CLOSING));
                                 break;
                             

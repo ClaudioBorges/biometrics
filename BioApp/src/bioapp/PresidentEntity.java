@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.JSONObject;
 
 /**
  *
@@ -33,6 +34,12 @@ public class PresidentEntity {
         TEST_COMPLETED,
         UNKNOWN
     };
+    
+    private static final int F_CREATED_AT = 2;
+    private static final int F_REGISTERED_AT = 3;
+    private static final int F_FINISHED_AT = 4;
+    private static final int F_CPF = 5;
+    private static final int F_STATE = 6;
     
     public class PresidentEntityRow {
         public final String cpf;
@@ -250,6 +257,90 @@ public class PresidentEntity {
         ResultSet rs = stmt.executeQuery(query);
         
         return rs;        
+    }
+    
+    public JSONObject buildJSON_Candidate(
+        String created_at,
+        String registered_at,
+        String finished_at,
+        String status) {
+        
+        JSONObject jsonObj = new JSONObject();
+        
+        jsonObj.put("created_at",       created_at);
+        jsonObj.put("registered_at",    registered_at);
+        jsonObj.put("finished_at",      finished_at);
+        jsonObj.put("status",           status);
+        
+        return jsonObj;
+    }
+    
+    public JSONObject buildJSON(ResultSet rs) {
+        JSONObject jsonObj = new JSONObject();
+        
+        try {
+            //  Get row data
+            while (rs.next()) {
+                
+                String cpf = "";
+                String created_at = "";
+                String registered_at = "";
+                String finished_at = "";
+                String state = "";
+                
+                int columns = rs.getMetaData().getColumnCount();
+                
+                for (int i = 1; i <= columns; i++) {
+                    Object o = rs.getObject(i);
+                    String data = "";
+                    
+                    if (o != null) {
+                        if (o instanceof String) {
+                            data = (String)o;
+                        } else if (o instanceof Integer) {
+                            data = ((Integer) o).toString();
+                        }
+                    }
+                    
+                    switch (i) {
+                        case F_CREATED_AT:
+                            created_at = data;
+                            break;
+                            
+                        case F_REGISTERED_AT:
+                            registered_at = data;
+                            break;
+                            
+                        case F_FINISHED_AT:
+                            finished_at = data;
+                            break;
+                            
+                        case F_CPF:
+                            cpf = data;
+                            break;
+                            
+                        case F_STATE:
+                            state = data;
+                            break;
+                    }
+                }
+                
+                JSONObject candidateJson = buildJSON_Candidate(
+                            created_at, registered_at, finished_at, state);
+                    
+                jsonObj.put(cpf, candidateJson);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(PresidentEntity.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                rs.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(PresidentEntity.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        return jsonObj;
     }
     
     public static void main(String[] args) throws ClassNotFoundException, SQLException {

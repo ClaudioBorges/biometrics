@@ -5,6 +5,7 @@
  */
 package bioapp;
 
+import bioapp.client.BioAppClient;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -82,12 +83,19 @@ public class BioApp {
             
             fDatabase = app.prop.fDatabasePath + "\\" + app.prop.fDatabaseName;
             fPhotoPath = app.prop.fPhotoPath;
+            
+            // Teste client
+            BioAppClient client = new BioAppClient();
+            System.out.print(
+                    client.sendLog(
+                            client.openConnection("localhost", 8888), fDatabase, "Claudio", "123"));
         } catch (IOException ex) {
             Logger.getLogger(BioApp.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        BioAppForm bioAppForm = new BioAppForm(fDatabase, fPhotoPath);
-        bioAppForm.setVisible(true);
+        // Teste
+        //BioAppForm bioAppForm = new BioAppForm(fDatabase, fPhotoPath);
+        //bioAppForm.setVisible(true);
     }
     
 }

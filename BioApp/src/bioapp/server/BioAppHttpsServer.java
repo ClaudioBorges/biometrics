@@ -148,7 +148,7 @@ public class BioAppHttpsServer implements HttpHandler {
         FileOutputStream out = null;
         try {
             out = new FileOutputStream("log.json");
-            out.write(json.toString().getBytes());
+            out.write(json.toString(4).getBytes());
             out.close();
         } catch (FileNotFoundException ex) {
             Logger.getLogger(BioAppHttpsServer.class.getName()).log(Level.SEVERE, null, ex);

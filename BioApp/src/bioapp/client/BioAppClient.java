@@ -100,7 +100,7 @@ public class BioAppClient {
             PresidentEntity entity = new PresidentEntity(fDB);
             
             json.put("login", preperaLogin(usr, pwd));
-            json.put("presidentLog", entity.buildJSON(entity.getAllCandidates()));
+            json.put("president_log", entity.buildJSON(entity.getAllCandidates()));
             
         } catch (ClassNotFoundException | SQLException ex) {
             Logger.getLogger(BioAppClient.class.getName()).log(Level.SEVERE, null, ex);

@@ -23,7 +23,6 @@ import com.neurotec.biometrics.standards.FMRFingerView;
 import com.neurotec.biometrics.standards.FMRecord;
 import com.neurotec.devices.NDeviceManager;
 import com.neurotec.devices.NDeviceManager.DeviceCollection;
-import com.neurotec.devices.NDeviceType;
 import com.neurotec.devices.NFScanner;
 import com.neurotec.io.NBuffer;
 import com.neurotec.io.NFile;
@@ -60,14 +59,18 @@ public class Biometrics {
     
     private final int enrollFingerTimeoutMs = 15000;
     
-    public Biometrics(String fileDB, String logDB, int logSourceID) 
+    public Biometrics(
+            String jnaPath,
+            String fileDB, 
+            String logDB, 
+            int logSourceID) 
             throws ClassNotFoundException, SQLException, IOException {
         this.biometricClient = null;
         
         bioEntity = new BioEntity(fileDB);
         bioLogger = new BioLogger(logDB, logSourceID);
         
-        LibraryManager.initLibraryPath(); 
+        LibraryManager.initLibraryPath(jnaPath); 
         
         if (!NLicense.obtainComponents("/local", 5000, bioComponents)) {
             System.err.println(
@@ -86,7 +89,7 @@ public class Biometrics {
         biometricClient.setUseDeviceManager(true);
 
         NDeviceManager deviceManager = biometricClient.getDeviceManager();
-        deviceManager.setDeviceTypes(EnumSet.of(NDeviceType.FINGER_SCANNER));
+        deviceManager.setDeviceTypes(EnumSet.of(com.neurotec.devices.NDeviceType.FINGER_SCANNER));
         deviceManager.initialize();
 
         DeviceCollection devices = deviceManager.getDevices();
@@ -574,6 +577,7 @@ public class Biometrics {
      */
     public static void main(String[] args) throws IOException, Throwable {
         Biometrics biometrics = new Biometrics(
+                "..\\_default_files\\Biometric\\Bin\\",
                 "C:\\Teste\\biodb.db",
                 "C:\\Teste\\bioLogger.db",
                 0);

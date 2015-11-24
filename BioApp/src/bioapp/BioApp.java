@@ -20,7 +20,7 @@ import java.util.logging.Logger;
  */
 public class BioApp {
     
-    private static final String configPath = "BioApp.properties";
+    private static final String configPath = "..\\_default_files\\BioApp\\BioApp.properties";
     
     public final PropertyValues prop;
     
@@ -51,9 +51,9 @@ public class BioApp {
                             "property file '" + filename + "' not found");
                 }
                 
-                fDatabasePath = prop.getProperty("database_path");
-                fDatabaseName = prop.getProperty("database_name");
-                fPhotoPath = prop.getProperty("photo_path");
+                fDatabasePath   = prop.getProperty("BIO_APP_DATABASE_PATH");
+                fDatabaseName   = prop.getProperty("BIO_APP_DATABASE_NAME");
+                fPhotoPath  = prop.getProperty("BIO_APP_PHOTO_PATH");
             } catch (IOException | NumberFormatException ex) {
                 Logger.getLogger(
                         BioApp.class.getName()).log(Level.SEVERE, null, ex);
@@ -72,7 +72,7 @@ public class BioApp {
         
         String fDatabase = "";
         String fPhotoPath = "";
-        
+                
         try {
             app = new BioApp(configPath);
             

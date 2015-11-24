@@ -49,7 +49,7 @@ public class BioAppHttpsServer implements HttpHandler {
     public BioAppHttpsServer() {
         String ksName = "keystore.jks";
         char ksPass[] = "12345678".toCharArray();
-        char ctPass[] = "000000".toCharArray();
+        char ctPass[] = "12345678".toCharArray();
         
         try {            
             // initialise the HTTPS server

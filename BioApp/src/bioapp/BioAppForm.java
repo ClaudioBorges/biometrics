@@ -28,7 +28,7 @@ import javax.swing.text.MaskFormatter;
  * @author Claudio
  */
 public class BioAppForm extends javax.swing.JFrame {
-
+    
     private PresidentEntity entity = null;
     private String photoPath;
     

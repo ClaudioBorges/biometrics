@@ -28,7 +28,7 @@ import java.util.logging.Logger;
  */
 public class BioServer {
 
-    private static final String configPath = "BioServerConfig.properties";
+    private final String configFile;
     
     private static final int SERVER_PORT = 1765;
     private static final String reqBioCpf = "REQ_biometric_from_cpf:";
@@ -50,9 +50,15 @@ public class BioServer {
     }
     
     private class PropertyValues {
+        private String bioPath = null;
         private String bioDB = null;
         private String bioLoggerDB = null;
+        private int serverPort = 1765;
         private int source = 0;
+        
+        public String getBioPath() {
+            return this.bioPath;
+        }
         
         public String getBioDB() {
             return this.bioDB;
@@ -64,6 +70,10 @@ public class BioServer {
         
         public int getSource() {
             return this.source;
+        }
+        
+        public int getServerPort() {
+            return this.serverPort;
         }
         
         public void updatePropValues(String filename) throws IOException {
@@ -80,9 +90,11 @@ public class BioServer {
                             "property file '" + filename + "' not found");
                 }
                 
-                bioDB = prop.getProperty("Biometric_DB");
-                bioLoggerDB = prop.getProperty("Biometric_Logger_DB");
-                source = Integer.parseInt(prop.getProperty("Biometric_Source"));
+                bioPath = prop.getProperty("BIO_NEUROTEC_PATH");
+                bioDB = prop.getProperty("BIO_SERVER_DB");
+                bioLoggerDB = prop.getProperty("BIO_SERVER_LOG_DB");
+                source = Integer.parseInt(prop.getProperty("BIO_SERVER_SOURCE"));
+                serverPort = Integer.parseInt(prop.getProperty("BIO_SERVER_PORT"));
             } catch (IOException | NumberFormatException ex) {
                 Logger.getLogger(
                         BioServer.class.getName()).log(Level.SEVERE, null, ex);
@@ -90,6 +102,10 @@ public class BioServer {
                 if (is != null) is.close();
             }
         }
+    }
+    
+    public BioServer(String configFile) {
+        this.configFile = configFile;
     }
     
     private BIO_CHECK_ERROR validateBiometric(
@@ -203,9 +219,10 @@ public class BioServer {
             dbgMsg("Openning Biometrics...");
             
             propVals = new PropertyValues();
-            propVals.updatePropValues(configPath);           
+            propVals.updatePropValues(configFile);           
             
             bio = new Biometrics(
+                    propVals.getBioPath(),
                     propVals.getBioDB(),
                     propVals.getBioLoggerDB(),
                     propVals.getSource());
@@ -213,8 +230,8 @@ public class BioServer {
                 throw new IOException("Finger Scanner not found.");            
             
             dbgMsg("Openning server port...");
-            socket = new ServerSocket(SERVER_PORT);
-            dbgMsg("Server listenning to: " + SERVER_PORT);
+            socket = new ServerSocket(propVals.getServerPort());
+            dbgMsg("Server listenning to: " + propVals.getServerPort());
                         
             while (true) {
                 dbgMsg("Waiting for client...");
@@ -247,7 +264,20 @@ public class BioServer {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        BioServer bioServer = new BioServer();
+        
+        String configFile; 
+        
+        if (args.length > 1) {
+            System.out.println("usage: \"config_file\"");
+            return;
+        } else if (args.length == 0) {
+            configFile = "../_default_files/BioServer/BioServerConfig.properties";
+            System.out.println("Config file: " + configFile);
+        } else {
+            configFile = args[0];
+        }  
+
+        BioServer bioServer = new BioServer(configFile);
         
         while (true) {
             try {

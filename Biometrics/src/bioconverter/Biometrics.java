@@ -123,9 +123,7 @@ public class Biometrics {
             System.out.println("Finger scanner " + selection + " selected.");
         }
         
-
         biometricClient.setFingerScanner((NFScanner) devices.get(selection));
-        
         
         return true;
     }

@@ -5,7 +5,7 @@
  */
 package bioapp;
 
-import bioclient.BioClient;
+import bioserver.BioClient;
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamPanel;
 import com.github.sarxos.webcam.WebcamResolution;
@@ -412,7 +412,7 @@ public final class BioRegUsr
                                 break;
                             
                             case REG_OUTPUT:
-                                entity.finishCandidate(cpf);                                
+                                entity.registerCandidateOut(cpf);                                
                                 dispatchEvent(new WindowEvent(
                                         (Window)myself, 
                                         WindowEvent.WINDOW_CLOSING));

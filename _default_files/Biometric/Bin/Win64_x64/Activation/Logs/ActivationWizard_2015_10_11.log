@@ -1,0 +1,5 @@
+2015-10-11 11:58:39 - System.NullReferenceException: Referência de objeto não definida para uma instância de um objeto.
+   em Neurotec.ActivationWizard.Misc.TrialLicenseDetails.GetUsed()
+   em Neurotec.ActivationWizard.Forms.MainForm.BackgroundWorkerDoWork(Object sender, DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.OnDoWork(DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.WorkerThreadStart(Object argument)

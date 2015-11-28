@@ -1,0 +1,5 @@
+<config>
+  <options>
+    <property name="Products" value="MegaMatcher Standard SDK;MegaMatcher Extended SDK;MegaMatcher On Card SDK;VeriFinger Standard SDK;VeriFinger Extended SDK;VeriEye Standard SDK;VeriEye Extended SDK;VeriLook Standard SDK;VeriLook Extended SDK;VeriSpeak Standard SDK;VeriSpeak Extended SDK;" type="str" />
+  </options>
+</config>

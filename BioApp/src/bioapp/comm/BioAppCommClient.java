@@ -123,7 +123,11 @@ public class BioAppCommClient {
             
             throws IOException, ClientProtocolException  {
         
-        HttpPost httppost = new HttpPost(formatHostName(protocol, hostname, port));
+        String host = formatHostName(protocol, hostname, port);
+        
+        logMsg("building post to: " + host);
+                
+        HttpPost httppost = new HttpPost(host);
         
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
         
@@ -139,7 +143,7 @@ public class BioAppCommClient {
         for (String key : photos.keySet()) {
             String path = photos.get(key);
 
-            builder.addPart("candidate_photo:" + key,  
+            builder.addPart("candidate_photo_" + key,  
                             new FileBody(new File(path)));
         }
         
@@ -198,8 +202,14 @@ public class BioAppCommClient {
                 entity = new PresidentEntity(fDB);
 
                 json = new JSONObject();
-                json.put("login", preperaLogin(usr, pwd));
                 json.put("president_log", entity.buildJSON(entity.getAllCandidates()));
+                
+                boolean saveFile = true;
+                if (saveFile) {
+                    try (FileOutputStream file = new FileOutputStream("president_log.json")) {
+                        file.write(json.toString(4).getBytes());
+                    }
+                }
                 
                 map = entity.getPhotosPath(entity.getAllCandidates());
 

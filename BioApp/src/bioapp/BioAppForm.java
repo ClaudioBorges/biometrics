@@ -336,7 +336,7 @@ public class BioAppForm extends javax.swing.JFrame {
                 item.setHorizontalTextPosition(JMenuItem.LEFT);           
                 item.addActionListener(menuListener);
                 if (isEditingCandidate == true 
-                        || state != PresidentEntity.CANDIDATE_STATE.IN_TEST)
+                        || state != PresidentEntity.CANDIDATE_STATE.REGISTERED_IN)
                     item.setEnabled(false);
                 
                 

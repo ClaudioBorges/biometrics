@@ -1,0 +1,22 @@
+{"president_log": {"candidates": [
+    {
+        "registered_out_at": "2015-11-28 16:23:14",
+        "registered_out_by": "candidate",
+        "cpf": "38502729829",
+        "created_at": "2015-11-28 16:16:36",
+        "registered_in_by": "candidate",
+        "registered_in_cpf": "38502729829",
+        "registered_out_cpf": "38502729829",
+        "registered_in_at": "2015-11-28 16:18:42"
+    },
+    {
+        "registered_out_at": "2015-11-28 16:24:26",
+        "registered_out_by": "candidate",
+        "cpf": "28895589831",
+        "created_at": "2015-11-28 16:16:36",
+        "registered_in_by": "candidate",
+        "registered_in_cpf": "28895589831",
+        "registered_out_cpf": "28895589831",
+        "registered_in_at": "2015-11-28 16:24:01"
+    }
+]}}

@@ -1,0 +1,95 @@
+2015-10-02 11:34:38 - System.NullReferenceException: Referência de objeto não definida para uma instância de um objeto.
+   em Neurotec.ActivationWizard.Misc.TrialLicenseDetails.GetUsed()
+   em Neurotec.ActivationWizard.Forms.MainForm.BackgroundWorkerDoWork(Object sender, DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.OnDoWork(DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.WorkerThreadStart(Object argument)
+2015-10-02 11:35:10 - System.NullReferenceException: Referência de objeto não definida para uma instância de um objeto.
+   em Neurotec.ActivationWizard.Misc.TrialLicenseDetails.GetUsed()
+   em Neurotec.ActivationWizard.Forms.MainForm.BackgroundWorkerDoWork(Object sender, DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.OnDoWork(DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.WorkerThreadStart(Object argument)
+2015-10-02 11:35:41 - System.NullReferenceException: Referência de objeto não definida para uma instância de um objeto.
+   em Neurotec.ActivationWizard.Misc.TrialLicenseDetails.GetUsed()
+   em Neurotec.ActivationWizard.Forms.MainForm.BackgroundWorkerDoWork(Object sender, DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.OnDoWork(DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.WorkerThreadStart(Object argument)
+2015-10-02 11:36:13 - System.NullReferenceException: Referência de objeto não definida para uma instância de um objeto.
+   em Neurotec.ActivationWizard.Misc.TrialLicenseDetails.GetUsed()
+   em Neurotec.ActivationWizard.Forms.MainForm.BackgroundWorkerDoWork(Object sender, DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.OnDoWork(DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.WorkerThreadStart(Object argument)
+2015-10-02 11:36:45 - System.NullReferenceException: Referência de objeto não definida para uma instância de um objeto.
+   em Neurotec.ActivationWizard.Misc.TrialLicenseDetails.GetUsed()
+   em Neurotec.ActivationWizard.Forms.MainForm.BackgroundWorkerDoWork(Object sender, DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.OnDoWork(DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.WorkerThreadStart(Object argument)
+2015-10-02 11:37:16 - System.NullReferenceException: Referência de objeto não definida para uma instância de um objeto.
+   em Neurotec.ActivationWizard.Misc.TrialLicenseDetails.GetUsed()
+   em Neurotec.ActivationWizard.Forms.MainForm.BackgroundWorkerDoWork(Object sender, DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.OnDoWork(DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.WorkerThreadStart(Object argument)
+2015-10-02 11:37:48 - System.NullReferenceException: Referência de objeto não definida para uma instância de um objeto.
+   em Neurotec.ActivationWizard.Misc.TrialLicenseDetails.GetUsed()
+   em Neurotec.ActivationWizard.Forms.MainForm.BackgroundWorkerDoWork(Object sender, DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.OnDoWork(DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.WorkerThreadStart(Object argument)
+2015-10-02 11:38:20 - System.NullReferenceException: Referência de objeto não definida para uma instância de um objeto.
+   em Neurotec.ActivationWizard.Misc.TrialLicenseDetails.GetUsed()
+   em Neurotec.ActivationWizard.Forms.MainForm.BackgroundWorkerDoWork(Object sender, DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.OnDoWork(DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.WorkerThreadStart(Object argument)
+2015-10-02 11:38:51 - System.NullReferenceException: Referência de objeto não definida para uma instância de um objeto.
+   em Neurotec.ActivationWizard.Misc.TrialLicenseDetails.GetUsed()
+   em Neurotec.ActivationWizard.Forms.MainForm.BackgroundWorkerDoWork(Object sender, DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.OnDoWork(DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.WorkerThreadStart(Object argument)
+2015-10-02 11:39:23 - System.NullReferenceException: Referência de objeto não definida para uma instância de um objeto.
+   em Neurotec.ActivationWizard.Misc.TrialLicenseDetails.GetUsed()
+   em Neurotec.ActivationWizard.Forms.MainForm.BackgroundWorkerDoWork(Object sender, DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.OnDoWork(DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.WorkerThreadStart(Object argument)
+2015-10-02 11:39:54 - System.NullReferenceException: Referência de objeto não definida para uma instância de um objeto.
+   em Neurotec.ActivationWizard.Misc.TrialLicenseDetails.GetUsed()
+   em Neurotec.ActivationWizard.Forms.MainForm.BackgroundWorkerDoWork(Object sender, DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.OnDoWork(DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.WorkerThreadStart(Object argument)
+2015-10-02 11:40:26 - System.NullReferenceException: Referência de objeto não definida para uma instância de um objeto.
+   em Neurotec.ActivationWizard.Misc.TrialLicenseDetails.GetUsed()
+   em Neurotec.ActivationWizard.Forms.MainForm.BackgroundWorkerDoWork(Object sender, DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.OnDoWork(DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.WorkerThreadStart(Object argument)
+2015-10-02 11:40:57 - System.NullReferenceException: Referência de objeto não definida para uma instância de um objeto.
+   em Neurotec.ActivationWizard.Misc.TrialLicenseDetails.GetUsed()
+   em Neurotec.ActivationWizard.Forms.MainForm.BackgroundWorkerDoWork(Object sender, DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.OnDoWork(DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.WorkerThreadStart(Object argument)
+2015-10-02 11:41:29 - System.NullReferenceException: Referência de objeto não definida para uma instância de um objeto.
+   em Neurotec.ActivationWizard.Misc.TrialLicenseDetails.GetUsed()
+   em Neurotec.ActivationWizard.Forms.MainForm.BackgroundWorkerDoWork(Object sender, DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.OnDoWork(DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.WorkerThreadStart(Object argument)
+2015-10-02 11:42:00 - System.NullReferenceException: Referência de objeto não definida para uma instância de um objeto.
+   em Neurotec.ActivationWizard.Misc.TrialLicenseDetails.GetUsed()
+   em Neurotec.ActivationWizard.Forms.MainForm.BackgroundWorkerDoWork(Object sender, DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.OnDoWork(DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.WorkerThreadStart(Object argument)
+2015-10-02 11:42:32 - System.NullReferenceException: Referência de objeto não definida para uma instância de um objeto.
+   em Neurotec.ActivationWizard.Misc.TrialLicenseDetails.GetUsed()
+   em Neurotec.ActivationWizard.Forms.MainForm.BackgroundWorkerDoWork(Object sender, DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.OnDoWork(DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.WorkerThreadStart(Object argument)
+2015-10-02 11:43:03 - System.NullReferenceException: Referência de objeto não definida para uma instância de um objeto.
+   em Neurotec.ActivationWizard.Misc.TrialLicenseDetails.GetUsed()
+   em Neurotec.ActivationWizard.Forms.MainForm.BackgroundWorkerDoWork(Object sender, DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.OnDoWork(DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.WorkerThreadStart(Object argument)
+2015-10-02 11:43:35 - System.NullReferenceException: Referência de objeto não definida para uma instância de um objeto.
+   em Neurotec.ActivationWizard.Misc.TrialLicenseDetails.GetUsed()
+   em Neurotec.ActivationWizard.Forms.MainForm.BackgroundWorkerDoWork(Object sender, DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.OnDoWork(DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.WorkerThreadStart(Object argument)
+2015-10-02 11:44:06 - System.NullReferenceException: Referência de objeto não definida para uma instância de um objeto.
+   em Neurotec.ActivationWizard.Misc.TrialLicenseDetails.GetUsed()
+   em Neurotec.ActivationWizard.Forms.MainForm.BackgroundWorkerDoWork(Object sender, DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.OnDoWork(DoWorkEventArgs e)
+   em System.ComponentModel.BackgroundWorker.WorkerThreadStart(Object argument)

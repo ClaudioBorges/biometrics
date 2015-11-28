@@ -13,12 +13,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONObject;
+import org.json.JSONArray;
 
 /**
  *
@@ -27,46 +27,16 @@ import org.json.JSONObject;
 public class PresidentEntity {
     
     private final Connection conn;
-    private ArrayList<PresidentEntityRow> localTable = null;
-    
-    public enum CANDIDATE_STATE {
-        NOT_VERIFIED,
-        IN_TEST,
-        TEST_COMPLETED,
-        UNKNOWN
-    };
-    
+ 
     private static final int F_CREATED_AT = 2;
-    private static final int F_REGISTERED_AT = 3;
-    private static final int F_FINISHED_AT = 4;
-    private static final int F_CPF = 5;
-    private static final int F_STATE = 6;
-    private static final int F_PHOTO = 7;
-    
-    public class PresidentEntityRow {
-        public final String cpf;
-        public final String created_at;
-        public final String registered_at;
-        public final String finished_at;
-        public final CANDIDATE_STATE state;
-        public final String photo;
-        
-        public PresidentEntityRow(
-                String cpf, 
-                String created_at, 
-                String registered_at, 
-                String finished_at,
-                CANDIDATE_STATE state,
-                String photo) {
-            
-            this.cpf = cpf;
-            this.created_at = created_at;
-            this.registered_at = registered_at;
-            this.finished_at = finished_at;
-            this.state = state;
-            this.photo = photo;
-        }
-    };
+    private static final int F_REGISTERED_IN_AT = 3;
+    private static final int F_REGISTERED_IN_CPF = 4;    
+    private static final int F_REGISTERED_IN_BY = 5;
+    private static final int F_REGISTERED_OUT_AT = 6;
+    private static final int F_REGISTERED_OUT_CPF = 7;    
+    private static final int F_REGISTERED_OUT_BY = 8;
+    private static final int F_CPF = 9;
+    private static final int F_PHOTO = 10;
     
     public PresidentEntity(String filename) 
             throws ClassNotFoundException, SQLException {
@@ -92,10 +62,13 @@ public class PresidentEntity {
                     "CREATE TABLE IF NOT EXISTS BioPresidentEntity ("
                         + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
                         + "created_at TIMESTAMP NOT NULL,"
-                        + "registered_at TIMESTAMP,"
-                        + "finished_at TIMESTAMP,"
+                        + "registered_in_at TIMESTAMP,"
+                        + "registered_in_cpf VARCHAR(14),"
+                        + "registered_in_by TEXT CHECK(registered_in_by IN ('candidate', 'president')),"
+                        + "registered_out_at TIMESTAMP,"
+                        + "registered_out_cpf VARCHAR(14),"
+                        + "registered_out_by TEXT CHECK(registered_out_by IN ('candidate', 'president')),"
                         + "cpf VARCHAR(14) UNIQUE NOT NULL,"
-                        + "state INTEGER NOT NULL,"
                         + "photo TEXT);");
         } catch (SQLException ex) {
             Logger.getLogger(PresidentEntity.class.getName())
@@ -114,12 +87,11 @@ public class PresidentEntity {
             Date date = new Date();
             
             PreparedStatement stmt = this.conn.prepareStatement(
-                    "INSERT INTO BioPresidentEntity(created_at, cpf, state) "
-                    + "VALUES (?, ?, ?)");
+                    "INSERT INTO BioPresidentEntity(created_at, cpf) "
+                    + "VALUES (?, ?)");
             
             stmt.setString(1, getDateTime(date));
             stmt.setString(2, cpf);
-            stmt.setInt(3, CANDIDATE_STATE.NOT_VERIFIED.ordinal());
             stmt.execute();
             
         } catch (SQLException ex) {
@@ -128,43 +100,71 @@ public class PresidentEntity {
         }
     }
     
+    public void registerCandidateIn(String cpf, String photo, String presidentCpf) {
+        try {
+            PreparedStatement stmt = this.conn.prepareStatement(
+                    "UPDATE BioPresidentEntity "
+                    + "SET registered_in_at = ? " 
+                    + ", registered_in_cpf = ? "
+                    + ", registered_in_by = ? "
+                    + ", photo = ? "
+                    + "WHERE cpf = ? ");
+            
+            Date date = new Date();
+            
+            stmt.setString(1, getDateTime(date));
+            if (presidentCpf == null) {
+                stmt.setString(2, cpf);
+                stmt.setString(3, "candidate");
+            } else {
+                stmt.setString(2, presidentCpf);
+                stmt.setString(3, "president");
+            }
+            stmt.setString(4, photo);            
+            stmt.setString(5, cpf);
+            
+            stmt.execute();
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(PresidentEntity.class.getName())
+                    .log(Level.SEVERE, null, ex);
+        }  
+    }
+    
     public void registerCandidateIn(String cpf, String photo) {
+        registerCandidateIn(cpf, photo, null);     
+    }
+    
+    public void registerCandidateOut(String cpf, String presidentCpf) {
         try {
             Date date = new Date();
             
             PreparedStatement stmt = this.conn.prepareStatement(
-                    "UPDATE BioPresidentEntity SET registered_at = ?, state = ?, photo = ?"
-                    + "WHERE cpf = ? ");
+                    "UPDATE BioPresidentEntity "
+                    + "SET registered_out_at = ?"
+                    + ", registered_out_cpf = ?"
+                    + ", registered_out_by = ?"        
+                    + " WHERE cpf = ? ");
             
-            stmt.setString(1, getDateTime(date));            
-            stmt.setInt(2, CANDIDATE_STATE.IN_TEST.ordinal());
-            stmt.setString(3, photo);
+            stmt.setString(1, getDateTime(date));
+            if (presidentCpf == null) {
+                stmt.setString(2, cpf);
+                stmt.setString(3, "candidate");
+            } else {
+                stmt.setString(2, presidentCpf);
+                stmt.setString(3, "president");
+            }
             stmt.setString(4, cpf);
             stmt.execute();
             
         } catch (SQLException ex) {
             Logger.getLogger(PresidentEntity.class.getName())
                     .log(Level.SEVERE, null, ex);
-        }        
+        }          
     }
     
-    public void finishCandidate(String cpf) {
-        try {
-            Date date = new Date();
-            
-            PreparedStatement stmt = this.conn.prepareStatement(
-                    "UPDATE BioPresidentEntity SET finished_at = ?, state = ?"
-                    + "WHERE cpf = ? ");
-            
-            stmt.setString(1, getDateTime(date));            
-            stmt.setInt(2, CANDIDATE_STATE.TEST_COMPLETED.ordinal());
-            stmt.setString(3, cpf);
-            stmt.execute();
-            
-        } catch (SQLException ex) {
-            Logger.getLogger(PresidentEntity.class.getName())
-                    .log(Level.SEVERE, null, ex);
-        }          
+    public void registerCandidateOut(String cpf) {
+        registerCandidateOut(cpf, null);      
     }
     
     public void updatePhoto(String cpf, String photo) {
@@ -183,6 +183,13 @@ public class PresidentEntity {
         }         
     }
     
+    public enum CANDIDATE_STATE {
+        NOT_VERIFIED,
+        REGISTERED_IN,
+        REGISTERED_OUT,
+        UNKNOWN
+    }
+    
     public CANDIDATE_STATE getCandidateState(String cpf) {
         
         CANDIDATE_STATE state = CANDIDATE_STATE.UNKNOWN;
@@ -191,13 +198,22 @@ public class PresidentEntity {
                 
         try {
             stmt = this.conn.prepareStatement(
-                    "SELECT state from BioPresidentEntity WHERE cpf = ?;");
+                    "SELECT registered_in_at, registered_out_at "
+                            + "from BioPresidentEntity WHERE cpf = ?;");
             
             stmt.setString(1, cpf);
             rs = stmt.executeQuery();
             
             if (rs.next()) {
-                state = CANDIDATE_STATE.values()[rs.getInt(1)];
+                String registered_in_at = rs.getString(1);
+                String registered_out_at = rs.getString(2);                
+                
+                if (registered_in_at == null)
+                    state = CANDIDATE_STATE.NOT_VERIFIED;
+                else if (registered_out_at == null)
+                    state = CANDIDATE_STATE.REGISTERED_IN;
+                else
+                    state = CANDIDATE_STATE.REGISTERED_OUT;
             }            
         } catch (SQLException ex) {
             Logger.getLogger(PresidentEntity.class.getName()).log(Level.SEVERE, null, ex);
@@ -262,17 +278,21 @@ public class PresidentEntity {
     }
     
     public JSONObject buildJSON_Candidate(
-        String created_at,
-        String registered_at,
-        String finished_at,
-        String status) {
+        String cpf,
+        String created_at, 
+        String registered_in_at, String registered_in_cpf, String registered_in_by, 
+        String registered_out_at, String registered_out_cpf, String registered_out_by) {
         
         JSONObject jsonObj = new JSONObject();
         
-        jsonObj.put("created_at",       created_at);
-        jsonObj.put("registered_at",    registered_at);
-        jsonObj.put("finished_at",      finished_at);
-        jsonObj.put("status",           status);
+        jsonObj.put("cpf",                  cpf);
+        jsonObj.put("created_at",           created_at);
+        jsonObj.put("registered_in_at",     registered_in_at);
+        jsonObj.put("registered_in_cpf",    registered_in_cpf);
+        jsonObj.put("registered_in_by",     registered_in_by);        
+        jsonObj.put("registered_out_at",     registered_out_at);
+        jsonObj.put("registered_out_cpf",    registered_out_cpf);
+        jsonObj.put("registered_out_by",     registered_out_by);
         
         return jsonObj;
     }
@@ -329,6 +349,7 @@ public class PresidentEntity {
     
     public JSONObject buildJSON(ResultSet rs) {
         JSONObject jsonObj = new JSONObject();
+        JSONArray jsonArray = new JSONArray();
         
         try {
             //  Get row data
@@ -336,9 +357,12 @@ public class PresidentEntity {
                 
                 String cpf = "";
                 String created_at = "";
-                String registered_at = "";
-                String finished_at = "";
-                String state = "";
+                String registered_in_at = "";
+                String registered_in_cpf = "";
+                String registered_in_by = "";                
+                String registered_out_at = "";
+                String registered_out_cpf = "";
+                String registered_out_by = "";
                 
                 int columns = rs.getMetaData().getColumnCount();
                 
@@ -359,28 +383,41 @@ public class PresidentEntity {
                             created_at = data;
                             break;
                             
-                        case F_REGISTERED_AT:
-                            registered_at = data;
+                        case F_REGISTERED_IN_AT:
+                            registered_in_at = data;
+                            break;
+
+                        case F_REGISTERED_IN_CPF:
+                            registered_in_cpf = data;
+                            break;
+                        case F_REGISTERED_IN_BY:
+                            registered_in_by = data;
                             break;
                             
-                        case F_FINISHED_AT:
-                            finished_at = data;
+                        case F_REGISTERED_OUT_AT:
+                            registered_out_at = data;
+                            break;
+
+                        case F_REGISTERED_OUT_CPF:
+                            registered_out_cpf = data;
+                            break;
+                        case F_REGISTERED_OUT_BY:
+                            registered_out_by = data;
                             break;
                             
                         case F_CPF:
                             cpf = data;
                             break;
-                            
-                        case F_STATE:
-                            state = data;
-                            break;
                     }
                 }
                 
                 JSONObject candidateJson = buildJSON_Candidate(
-                            created_at, registered_at, finished_at, state);
-                    
-                jsonObj.put(cpf, candidateJson);
+                        cpf,
+                        created_at, 
+                        registered_in_at, registered_in_cpf, registered_in_by, 
+                        registered_out_at, registered_out_cpf, registered_out_by);
+                
+                jsonArray.put(candidateJson);
             }
         } catch (SQLException ex) {
             Logger.getLogger(PresidentEntity.class.getName()).log(Level.SEVERE, null, ex);
@@ -392,6 +429,8 @@ public class PresidentEntity {
             }
         }
         
+        jsonObj.put("candidates", jsonArray);
+        
         return jsonObj;
     }
     
@@ -399,15 +438,15 @@ public class PresidentEntity {
         PresidentEntity log = new PresidentEntity("C:\\Teste\\BioPresidentLog.db");
         
         log.prepareCandidate("38502729829");
-        log.prepareCandidate("38502729800");
+        log.prepareCandidate("28895589831");
         
-        log.registerCandidateIn("38502729829", "C:\\Teste\\camera.jeg");        
-        log.registerCandidateIn("38502729800", "C:\\Teste\\camera1.jeg");               
-        log.registerCandidateIn("38502729801", "C:\\Teste\\camera1.jeg");
-        log.registerCandidateIn("38502729829", null);
-        
-        log.finishCandidate("385");
-        log.finishCandidate("38502729829");
-        log.finishCandidate("38502729800");
+//        log.registerCandidateIn("38502729829", "C:\\Teste\\camera.jeg");        
+//        log.registerCandidateIn("38502729800", "C:\\Teste\\camera1.jeg");               
+//        log.registerCandidateIn("38502729801", "C:\\Teste\\camera1.jeg");
+//        log.registerCandidateIn("38502729829", null);
+//        
+//        log.registerCandidateOut("385");
+//        log.registerCandidateOut("38502729829");
+//        log.registerCandidateOut("38502729800");
     } 
 }

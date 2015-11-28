@@ -15,6 +15,7 @@ import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONObject;
@@ -40,6 +41,7 @@ public class PresidentEntity {
     private static final int F_FINISHED_AT = 4;
     private static final int F_CPF = 5;
     private static final int F_STATE = 6;
+    private static final int F_PHOTO = 7;
     
     public class PresidentEntityRow {
         public final String cpf;
@@ -273,6 +275,56 @@ public class PresidentEntity {
         jsonObj.put("status",           status);
         
         return jsonObj;
+    }
+    
+    public HashMap<String, String> getPhotosPath(ResultSet rs) {
+        HashMap<String, String> map = new HashMap<>();
+        
+        try {
+            //  Get row data
+            while (rs.next()) {
+                
+                String cpf = "";
+                String photo = "";
+                
+                int columns = rs.getMetaData().getColumnCount();
+                
+                for (int i = 1; i <= columns; i++) {
+                    Object o = rs.getObject(i);
+                    String data = "";
+                    
+                    if (o != null) {
+                        if (o instanceof String) {
+                            data = (String)o;
+                        } else if (o instanceof Integer) {
+                            data = ((Integer) o).toString();
+                        }
+                    }
+                    
+                    switch (i) {                            
+                        case F_CPF:
+                            cpf = data;
+                            break;
+                            
+                        case F_PHOTO:
+                            photo = data;
+                            break;
+                    }
+                }
+                
+                map.put(cpf, photo);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(PresidentEntity.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                rs.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(PresidentEntity.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        return map;
     }
     
     public JSONObject buildJSON(ResultSet rs) {

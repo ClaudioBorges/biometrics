@@ -3,13 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package biotransfer.client;
+package bioapp.comm;
 
+import bioapp.PresidentEntity;
 import java.io.*;
+import java.net.ConnectException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.HostnameVerifier;
@@ -17,6 +21,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -29,20 +34,18 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
 
-import biotransfer.*;
-import java.net.ConnectException;
-import org.apache.http.client.ClientProtocolException;
 
 /**
  *
  * @author Claudio
  */
-public class BioTransferClient {
+public class BioAppCommClient {
     
     private final CloseableHttpClient httpclient;
     
-    public BioTransferClient(
+    public BioAppCommClient(
             String commProtocol, 
             String commHostname,
             String keyFilePath,
@@ -83,7 +86,7 @@ public class BioTransferClient {
                 throw new IOException("Failed to set up ssl context.");
             }
         } else if ("http".equals(commProtocol)) {
-            BioTransferClient.logMsg("HTTPS IS NOT PRESENT!!!");
+            BioAppCommClient.logMsg("HTTPS IS NOT PRESENT!!!");
             httpclient = HttpClients.custom().build();
         } else {
             throw new IllegalArgumentException("Unrecognised communication protocol");
@@ -108,29 +111,39 @@ public class BioTransferClient {
         if (httpclient != null) try {
             httpclient.close();
         } catch (IOException ex) {
-            Logger.getLogger(BioTransferClient.class.getName())
+            Logger.getLogger(BioAppCommClient.class.getName())
                     .log(Level.SEVERE, null, ex);
         }
     }
     
-    public CloseableHttpResponse sendFile(
+    public CloseableHttpResponse sendLog(
             String protocol, String hostname, int port,
             String username, String password,
-            String filename) 
-            throws IOException, ClientProtocolException {
+            JSONObject json, HashMap<String, String> photos) 
+            
+            throws IOException, ClientProtocolException  {
         
         HttpPost httppost = new HttpPost(formatHostName(protocol, hostname, port));
         
-        HttpEntity reqEntity = MultipartEntityBuilder.create()
-                    .addPart("type", 
-                            new StringBody("db_upload", ContentType.TEXT_PLAIN))
-                    .addPart("username", 
-                            new StringBody(username, ContentType.TEXT_PLAIN))
-                    .addPart("password", 
-                            new StringBody(password, ContentType.TEXT_PLAIN))
-                    .addPart("data",  
-                            new FileBody(new File(filename)))
-                    .build();
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+        
+        builder.addPart("type", 
+                new StringBody("president_db_upload", ContentType.TEXT_PLAIN));
+        builder.addPart("username", 
+                new StringBody(username, ContentType.TEXT_PLAIN));
+        builder.addPart("password",
+                new StringBody(password, ContentType.TEXT_PLAIN));
+        builder.addPart("candidates_json", 
+                new StringBody(json.toString(0), ContentType.TEXT_PLAIN));
+        
+        for (String key : photos.keySet()) {
+            String path = photos.get(key);
+
+            builder.addPart("candidate_photo:" + key,  
+                            new FileBody(new File(path)));
+        }
+        
+        HttpEntity reqEntity = builder.build();
         
         httppost.setEntity(reqEntity);
         
@@ -157,7 +170,48 @@ public class BioTransferClient {
         return true;
     }
 
-    public static void main(String[] args) throws IOException
+    private JSONObject preperaLogin(String usr, String pwd) {
+        
+        JSONObject json = new JSONObject();
+        
+        json.put("username", usr);
+        json.put("password", pwd);
+        
+        return json;
+    }
+        public class LogBuilder {
+        private final JSONObject json;
+
+        public JSONObject getJson() {
+            return json;
+        }
+
+        public HashMap<String, String> getMap() {
+            return map;
+        }
+        private final HashMap<String, String> map;
+        
+        LogBuilder(String fDB, String usr, String pwd) throws IOException {
+            PresidentEntity entity = null;
+            
+            try {
+                entity = new PresidentEntity(fDB);
+
+                json = new JSONObject();
+                json.put("login", preperaLogin(usr, pwd));
+                json.put("president_log", entity.buildJSON(entity.getAllCandidates()));
+                
+                map = entity.getPhotosPath(entity.getAllCandidates());
+
+            } catch (ClassNotFoundException | SQLException ex) {
+                throw new IOException("SQL error");
+            } finally {
+                if (entity != null) entity.close();
+            } 
+        }
+    }
+
+    public static void main(String[] args)
     {
         String filename;
         
@@ -165,26 +219,33 @@ public class BioTransferClient {
             System.out.println("usage: \"config_file\"");
             return;
         } else if (args.length == 0) {
-            filename = "../_default_files/BioTransfer/BioTransfer.properties";
+            filename = "../_default_files/BioApp/BioApp.properties";
         } else {
             filename = args[0];
         }
         
         try {
-            LoadConfig configs = new LoadConfig(filename);
+            BioAppCommLoad configs = new BioAppCommLoad(filename);
             
-            BioTransferClient client = new BioTransferClient(
+            BioAppCommClient client = new BioAppCommClient(
                     configs.getCommProtocol(), configs.getCommHost(),
                     configs.getKeystorePath(), configs.getKeystoreStorePwd());
             
+            BioAppCommClient.LogBuilder log 
+                    = client.new LogBuilder(
+                            configs.getAppDatabasePath() + configs.getAppDatabaseName(), 
+                            configs.getCommUsr(), configs.getCommPwd());
+
             client.verifyResponse(
-                    client.sendFile(
+                    client.sendLog(
                             configs.getCommProtocol(), configs.getCommHost(), configs.getCommPort(),
                             configs.getCommUsr(), configs.getCommPwd(),
-                            configs.getClientDBPath()));
+                            log.getJson(), log.getMap()));
             
         } catch (ClientProtocolException | ConnectException e) {
-            BioTransferClient.logMsg(e.getLocalizedMessage());
+            BioAppCommClient.logMsg(e.getLocalizedMessage());
+        } catch (NumberFormatException | IOException e) {
+            BioAppCommClient.logMsg(e.getLocalizedMessage());
         }
     }
 }

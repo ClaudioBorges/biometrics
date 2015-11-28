@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package bioapp.server;
+package bioapp.comm;
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
@@ -20,13 +20,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
-import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,19 +31,16 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLServerSocket;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocket;
 import org.json.JSONObject;
 
 /**
  *
  * @author Claudio
  */
-public class BioAppHttpsServer implements HttpHandler {
+public class BioAppCommServer implements HttpHandler {
     private HttpsServer httpsServer;
    
-    public BioAppHttpsServer() {
+    public BioAppCommServer() {
         String ksName = "keystore.jks";
         char ksPass[] = "12345678".toCharArray();
         char ctPass[] = "12345678".toCharArray();
@@ -81,7 +75,7 @@ public class BioAppHttpsServer implements HttpHandler {
                         SSLParameters defaultSSLParameters = c.getDefaultSSLParameters();
                         params.setSSLParameters(defaultSSLParameters);
                     } catch (NoSuchAlgorithmException ex) {
-                        Logger.getLogger(BioAppHttpsServer.class.getName())
+                        Logger.getLogger(BioAppCommServer.class.getName())
                                 .log(Level.SEVERE, null, ex);
                     }
                 }
@@ -100,14 +94,13 @@ public class BioAppHttpsServer implements HttpHandler {
     public static void main(String[] args) {
         {
             try {
-                BioAppHttpsServer httpsServer = new BioAppHttpsServer();
+                BioAppCommServer httpsServer = new BioAppCommServer();
                 BufferedReader stdIn = new BufferedReader(
                             new InputStreamReader(System.in));
                 while(stdIn.readLine().contains("exit") == false);
 
             } catch (Exception ex) {
-                Logger.getLogger(
-                        BioAppHttpsServer.class.getName()).log(Level.SEVERE, null, ex); 
+                Logger.getLogger(BioAppCommServer.class.getName()).log(Level.SEVERE, null, ex); 
             }
         }
     }
@@ -151,14 +144,14 @@ public class BioAppHttpsServer implements HttpHandler {
             out.write(json.toString(4).getBytes());
             out.close();
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(BioAppHttpsServer.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BioAppCommServer.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(BioAppHttpsServer.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BioAppCommServer.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
                 out.close();
             } catch (IOException ex) {
-                Logger.getLogger(BioAppHttpsServer.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(BioAppCommServer.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }

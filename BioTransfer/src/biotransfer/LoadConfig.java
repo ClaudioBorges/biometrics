@@ -29,8 +29,7 @@ public class LoadConfig {
     private String keystoreKeyPwd;
 
     private String serverStorePath;
-    private String serverValidFile;
-
+    
     private String clientDBPath;
 
     public String getCommProtocol() {
@@ -72,11 +71,7 @@ public class LoadConfig {
     public String getServerStorePath() {
         return serverStorePath;
     }
-
-    public String getServerValidFile() {
-        return serverValidFile;
-    }
-
+    
     public String getClientDBPath() {
         return clientDBPath;
     }
@@ -102,7 +97,6 @@ public class LoadConfig {
             keystoreKeyPwd = prop.getProperty("BIO_TRANSFER_KEYSTORE_KEY_PWD");
 
             serverStorePath = prop.getProperty("BIO_TRANSFER_SERVER_STORE_PATH");
-            serverValidFile = prop.getProperty("BIO_TRANSFER_SERVER_VALID_FILE");
 
             clientDBPath = prop.getProperty("BIO_TRANSFER_CLIENT_DB_PATH");
         }

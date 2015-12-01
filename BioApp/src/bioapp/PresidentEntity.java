@@ -5,7 +5,7 @@
  */
 package bioapp;
 
-import static cpflib.CPFLib.formatCPF_onlyNumbers;
+import static util.CPFLib.formatCPF_onlyNumbers;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;

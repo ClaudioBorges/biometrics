@@ -14,6 +14,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
+import java.nio.file.Files;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -49,6 +50,7 @@ import org.apache.http.impl.bootstrap.ServerBootstrap;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestHandler;
 import org.apache.http.ssl.SSLContexts;
+import util.FilesLib;
 
 /**
  *
@@ -275,7 +277,9 @@ public class BioTransferServer {
         
         if ("data".equals(contents[0])) {
             FileOutputStream oFile = null;
-            try {                
+            try {
+                FilesLib.creteFile(tmpFilePath);
+                
                 oFile = new FileOutputStream(tmpFilePath);
                 oFile.write(getBodyData(stream).toByteArray());
                 
@@ -291,7 +295,6 @@ public class BioTransferServer {
                 }
             }
             
-            
             try {
                 cloneDatabase(tmpFilePath, filePath);
             } catch (IOException ex) {
@@ -299,9 +302,11 @@ public class BioTransferServer {
             }
             
             {
-                File file = new File(tmpFilePath);
-                if (file.exists())
-                    file.delete();
+                try {
+                    FilesLib.deleteFile(tmpFilePath);
+                } catch (IOException ex) {
+                    Logger.getLogger(BioTransferServer.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
     }

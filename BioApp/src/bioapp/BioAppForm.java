@@ -208,9 +208,9 @@ public class BioAppForm extends javax.swing.JFrame {
     }                                                
 
     private void jSearchBtnActionPerformed(java.awt.event.ActionEvent evt) {                                           
-        workingCpf = cpflib.CPFLib.formatCPF_onlyNumbers(jTextEd_Cpf.getText());
+        workingCpf = util.CPFLib.formatCPF_onlyNumbers(jTextEd_Cpf.getText());
         
-        if (cpflib.CPFLib.isCPF(workingCpf) ==  false)
+        if (util.CPFLib.isCPF(workingCpf) ==  false)
             return;
         
         JTable table = PresidentEntityView.showCandidateFromCPF(entity, workingCpf);

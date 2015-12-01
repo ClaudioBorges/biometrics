@@ -9,9 +9,13 @@ import com.neurotec.biometrics.NSubject;
 import com.neurotec.io.NBuffer;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import util.FilesLib;
 /**
  *
  * @author Claudio
@@ -52,12 +56,29 @@ public class BioEntity {
         }
     }
     
+    private Connection BioGetConnection(String filename) 
+            throws ClassNotFoundException, SQLException {
+        
+        Connection dbConn = null;
+        
+        try {            
+            FilesLib.creteFile(filename);
+            
+            Class.forName("org.sqlite.JDBC");
+            dbConn = DriverManager.getConnection("jdbc:sqlite:" + filename);
+
+        } catch (IOException ex) {
+            Logger.getLogger(BioEntity.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return dbConn;
+    }
+    
+    
     public BioEntity(String filename) 
             throws ClassNotFoundException, SQLException {
         
-        Class.forName("org.sqlite.JDBC");
-        this.conn = DriverManager.getConnection("jdbc:sqlite:" + filename);
-        
+        this.conn = BioGetConnection(filename);
         initDB();
     }
     
@@ -69,11 +90,11 @@ public class BioEntity {
         }
     }
     
-    public void cloneFrom(String filename) throws IOException {
+    public void cloneFrom(String filename) throws IOException, ClassNotFoundException {
         Connection fromConn = null;
         
         try {
-            fromConn = DriverManager.getConnection("jdbc:sqlite:" + filename);
+            fromConn = BioGetConnection(filename);
             
             removeAll();
             
@@ -130,7 +151,8 @@ public class BioEntity {
                         + "name varchar(70) NOT NULL,"
                         + "data BLOB,"
                         + "credential TEXT CHECK(credential IN ('C', 'I', 'P')) NOT NULL DEFAULT 'C');");
-        } catch (SQLException e) {
+        } catch (SQLException ex) {
+            Logger.getLogger(BioEntity.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     

@@ -8,6 +8,7 @@ package bioconverter;
 import com.neurotec.biometrics.NSubject;
 import com.neurotec.io.NBuffer;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.sql.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -61,12 +62,64 @@ public class BioEntity {
     }
     
     public void close() {
-        try {
-            if (conn != null) this.conn.close();
+        if (this.conn != null) try {
+            this.conn.close();
         } catch (SQLException ex) {
-            Logger.getLogger(BioEntity.class.getName())
-                    .log(Level.SEVERE, null, ex);
+            Logger.getLogger(BioEntity.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    public void cloneFrom(String filename) throws IOException {
+        Connection fromConn = null;
+        
+        try {
+            fromConn = DriverManager.getConnection("jdbc:sqlite:" + filename);
+            
+            removeAll();
+            
+            String query = "SELECT * FROM People;";
+        
+            Statement fromStmt = fromConn.createStatement(); 
+            ResultSet rs = fromStmt.executeQuery(query);
+            
+            ResultSetMetaData md = rs.getMetaData();
+            int columns = md.getColumnCount();
+
+            String columnsIDs = "";
+            String identifiers = "";
+            for (int i = 1; i <= columns; i++) {
+                String name = md.getColumnName(i);
+                if (i == columns) {
+                    columnsIDs = columnsIDs.concat(name);
+                    identifiers += "?";
+                }
+                else {
+                    columnsIDs = columnsIDs.concat(name + ",");
+                    identifiers += "?,";
+                }
+            }
+            
+            String stmtString = "INSERT INTO People(" + columnsIDs + ") VALUES (" + identifiers + ")";
+            while (rs.next()) {
+                try (PreparedStatement stmt = this.conn.prepareStatement(stmtString)) {
+
+                    for (int i = 1; i <= columns; i++) {
+                        stmt.setObject(i, rs.getObject(i));                 
+                    }
+                    stmt.execute();
+                }
+            }
+        } catch (SQLException ex) {
+            throw new IOException("Can not open origin database: " + filename);
+        } finally {
+            if (fromConn != null) {
+                try {
+                    fromConn.close();
+                } catch (SQLException ex) {
+                    Logger.getLogger(BioEntity.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }        
     }
     
     private void initDB() {
@@ -76,7 +129,7 @@ public class BioEntity {
                         + "cpf varchar(14) PRIMARY KEY NOT NULL,"
                         + "name varchar(70) NOT NULL,"
                         + "data BLOB,"
-                        + "credential TEXT CHECK(credential IN ('C', 'I', 'P')) NOT NULL DEFAULT 'C';");
+                        + "credential TEXT CHECK(credential IN ('C', 'I', 'P')) NOT NULL DEFAULT 'C');");
         } catch (SQLException e) {
         }
     }
@@ -133,7 +186,7 @@ public class BioEntity {
             
         } 
     }
-    
+       
     public boolean isEntry(String cpf) {
         String query = "SELECT cpf FROM People WHERE cpf = \"" + cpf + "\";";
         

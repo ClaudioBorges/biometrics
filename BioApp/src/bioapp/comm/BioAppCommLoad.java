@@ -23,6 +23,7 @@ public class BioAppCommLoad {
     private String commProtocol;
     private String commHost;
     private int commPort;
+    private String commTrail;
     private String commUsr;
     private String commPwd;
     
@@ -49,7 +50,11 @@ public class BioAppCommLoad {
     public int getCommPort() {
         return commPort;
     }
-
+    
+    public String getCommTrail() {
+        return commTrail;
+    }
+    
     public String getCommUsr() {
         return commUsr;
     }
@@ -85,6 +90,7 @@ public class BioAppCommLoad {
             commProtocol = prop.getProperty("BIO_APP_COMM_PROTOCOL");
             commHost = prop.getProperty("BIO_APP_COMM_HOST");
             commPort = Integer.parseInt(prop.getProperty("BIO_APP_COMM_PORT"));
+            commTrail = prop.getProperty("BIO_APP_COMM_TRAIL");
             commUsr = prop.getProperty("BIO_APP_COMM_USR");
             commPwd = prop.getProperty("BIO_APP_COMM_PWD");
 

@@ -7,7 +7,10 @@ package bioapp;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JTable;
 import javax.swing.RowSorter;
 import javax.swing.table.DefaultTableModel;
@@ -55,8 +58,6 @@ public class PresidentEntityView {
 
                 data.addElement(row);
             }
-
-            rs.close();
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -104,12 +105,19 @@ public class PresidentEntityView {
 
     public static JTable showAllCandidates(PresidentEntity entity) {
         JTable table = null;
+        ResultSet rs = null;
         
         try {
-            ResultSet rs = entity.getAllCandidates();
+            rs = entity.getAllCandidates();
             table = showResultSet(rs);
         } catch (Exception e) {
             System.out.println(e);
+        } finally {
+            if (rs != null) try {
+                rs.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(PresidentEntityView.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         
         return table;
@@ -117,12 +125,19 @@ public class PresidentEntityView {
     
     public static JTable showNotVerifiedCandidates(PresidentEntity entity) {
         JTable table = null;
-        
+        ResultSet rs = null;
+                
         try {
-            ResultSet rs = entity.getNotVerifiedCandidates();
+            rs = entity.getNotVerifiedCandidates();
             table = showResultSet(rs);
         } catch (Exception e) {
             System.out.println(e);
+        } finally {
+            if (rs != null) try {
+                rs.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(PresidentEntityView.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         
         return table;
@@ -130,12 +145,19 @@ public class PresidentEntityView {
     
     public static JTable showRegisteredCandidates(PresidentEntity entity) {
         JTable table = null;
+        ResultSet rs = null;
         
         try {
-            ResultSet rs = entity.getRegisteredCandidates();
+            rs = entity.getRegisteredCandidates();
             table = showResultSet(rs);
         } catch (Exception e) {
             System.out.println(e);
+        } finally {
+            if (rs != null) try {
+                rs.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(PresidentEntityView.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         
         return table;
@@ -143,12 +165,19 @@ public class PresidentEntityView {
 
     public static JTable showFinishedCandidates(PresidentEntity entity) {
         JTable table = null;
+        ResultSet rs = null;
         
         try {
-            ResultSet rs = entity.getFinishedCandidates();
+            rs = entity.getFinishedCandidates();
             table = showResultSet(rs);
         } catch (Exception e) {
             System.out.println(e);
+        } finally {
+            if (rs != null) try {
+                rs.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(PresidentEntityView.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         
         return table;
@@ -156,12 +185,19 @@ public class PresidentEntityView {
     
     public static JTable showCandidateFromCPF(PresidentEntity entity, String cpf) {
         JTable table = null;
+        ResultSet rs = null;
         
         try {
-            ResultSet rs = entity.getCandidateFromCPF(cpf);
+            rs = entity.getCandidateFromCPF(cpf);
             table = showResultSet(rs);
         } catch (Exception e) {
             System.out.println(e);
+        } finally {
+            if (rs != null) try {
+                rs.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(PresidentEntityView.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         
         return table;

@@ -19,6 +19,7 @@ import java.util.logging.Logger;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
+import javax.swing.UIManager;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
@@ -97,14 +98,15 @@ public class BioAppCommClient {
         System.out.println("[DEBUG] " + msg);
     }
     
-    private String formatHostName(String protocol, String hostname, int port) {
+    private String formatHostName(String protocol, String hostname, int port, String trail) {
         return new String()
                 .concat(protocol)
                 .concat("://")
                 .concat(hostname)
                 .concat(":")
                 .concat(Integer.toString(port))
-                .concat("/");
+                .concat("/")
+                .concat(trail);
     }
     
     public void close() {
@@ -117,13 +119,13 @@ public class BioAppCommClient {
     }
     
     public CloseableHttpResponse sendLog(
-            String protocol, String hostname, int port,
+            String protocol, String hostname, int port, String trail,
             String username, String password,
             JSONObject json, HashMap<String, String> photos) 
             
             throws IOException, ClientProtocolException  {
         
-        String host = formatHostName(protocol, hostname, port);
+        String host = formatHostName(protocol, hostname, port, trail);
         
         logMsg("building post to: " + host);
                 
@@ -142,9 +144,12 @@ public class BioAppCommClient {
         
         for (String key : photos.keySet()) {
             String path = photos.get(key);
-
-            builder.addPart("candidate_photo_" + key,  
-                            new FileBody(new File(path)));
+            
+            File file = new File(path);
+            if (file.exists() && file.isFile() && file.canRead()) {
+                builder.addPart("candidate_photo_" + key,  
+                                new FileBody(file));
+            } 
         }
         
         HttpEntity reqEntity = builder.build();
@@ -248,7 +253,8 @@ public class BioAppCommClient {
 
             client.verifyResponse(
                     client.sendLog(
-                            configs.getCommProtocol(), configs.getCommHost(), configs.getCommPort(),
+                            configs.getCommProtocol(), configs.getCommHost(), 
+                            configs.getCommPort(), configs.getCommTrail(),
                             configs.getCommUsr(), configs.getCommPwd(),
                             log.getJson(), log.getMap()));
             

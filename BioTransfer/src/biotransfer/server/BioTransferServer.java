@@ -5,6 +5,7 @@
  */
 package biotransfer.server;
 
+import bioconverter.BioEntity;
 import biotransfer.LoadConfig;
 import com.sun.net.httpserver.Headers;
 import java.io.ByteArrayOutputStream;
@@ -18,6 +19,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -204,8 +206,7 @@ public class BioTransferServer {
                             String password = getContentBody(multipartStream, "password");
                             if (configs.getCommPwd().equals(password)) {
                                 saveDatabase(
-                                        multipartStream, 
-                                        configs.getServerValidFile(), 
+                                        multipartStream,
                                         configs.getServerStorePath());
                                 
                                 BioTransferServer.logMsg("Request OK"); 
@@ -250,20 +251,33 @@ public class BioTransferServer {
         return getContentBody(stream, "password");
     }
     
-    void saveDatabase(MultipartStream stream, String fileID, String filePath) {
+    void cloneDatabase(String db_from, String db_to) throws IOException {
+        
+        BioEntity bioEntity = null;
+        
+        try {
+            bioEntity = new BioEntity(db_to);
+            
+            bioEntity.cloneFrom(db_from);
+            
+        } catch (ClassNotFoundException | SQLException | IOException ex) {
+            throw new IOException("Impossible to clone databases: " + db_from + "--->" + db_to);
+        } finally {
+            if (bioEntity != null)  bioEntity.close();
+        }
+    }
+    
+    void saveDatabase(MultipartStream stream, String filePath) {
         String[] names = new String[]{"name", "filename"};
         String[] contents = getContents(stream, names);
         
+        String tmpFilePath = filePath + ".tmp";
+        
         if ("data".equals(contents[0])) {
-            FileOutputStream file = null;
-            try {
-                String filename = contents[1];
-                
-                if (fileID.equals(filename)) {
-                    file = new FileOutputStream(filePath);
-
-                    file.write(getBodyData(stream).toByteArray());
-                }
+            FileOutputStream oFile = null;
+            try {                
+                oFile = new FileOutputStream(tmpFilePath);
+                oFile.write(getBodyData(stream).toByteArray());
                 
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(BioTransferServer.class.getName()).log(Level.SEVERE, null, ex);
@@ -271,10 +285,23 @@ public class BioTransferServer {
                 Logger.getLogger(BioTransferServer.class.getName()).log(Level.SEVERE, null, ex);
             } finally {
                 try {
-                    if (file != null) file.close();
+                    if (oFile != null) oFile.close();
                 } catch (IOException ex) {
                     Logger.getLogger(BioTransferServer.class.getName()).log(Level.SEVERE, null, ex);
                 }
+            }
+            
+            
+            try {
+                cloneDatabase(tmpFilePath, filePath);
+            } catch (IOException ex) {
+                Logger.getLogger(BioTransferServer.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+            {
+                File file = new File(tmpFilePath);
+                if (file.exists())
+                    file.delete();
             }
         }
     }

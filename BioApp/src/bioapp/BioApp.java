@@ -13,14 +13,13 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import util.FilesLib;
 
 /**
  *
  * @author Claudio
  */
 public class BioApp {
-    
-    private static final String configPath = "..\\_default_files\\BioApp\\BioApp.properties";
     
     public final PropertyValues prop;
     
@@ -29,9 +28,21 @@ public class BioApp {
     }
     
     public final class PropertyValues {
-        public String fDatabasePath = "";
-        public String fDatabaseName = "";
-        public String fPhotoPath = "";
+        private String fDatabasePath = "";
+        private String fPhotoPath = "";
+        private String fPreparePath = "";
+        
+        public String getfDatabasePath() {
+            return fDatabasePath;
+        }
+
+        public String getfPhotoPath() {
+            return fPhotoPath;
+        }
+
+        public String getfPreparePath() {
+            return fPreparePath;
+        }
         
         public PropertyValues(String f) throws IOException {
             updatePropValues(f);
@@ -52,8 +63,8 @@ public class BioApp {
                 }
                 
                 fDatabasePath   = prop.getProperty("BIO_APP_DATABASE_PATH");
-                fDatabaseName   = prop.getProperty("BIO_APP_DATABASE_NAME");
-                fPhotoPath  = prop.getProperty("BIO_APP_PHOTO_PATH");
+                fPhotoPath      = prop.getProperty("BIO_APP_PHOTO_PATH");
+                fPreparePath    = prop.getProperty("BIO_APP_PREPARE_CANDIDATE_PATH");
             } catch (IOException | NumberFormatException ex) {
                 Logger.getLogger(
                         BioApp.class.getName()).log(Level.SEVERE, null, ex);
@@ -68,33 +79,34 @@ public class BioApp {
      */
     public static void main(String[] args) {
 
+        String configFile; 
+        
+        if (args.length > 1) {
+            System.out.println("usage: \"config_file\"");
+            return;
+        } else if (args.length == 0) {
+            configFile = "../_default_files/BioApp/BioApp.properties";
+            System.out.println("Config file: " + configFile);
+        } else {
+            configFile = args[0];
+        }  
+        
         BioApp app;
         
-        String fDatabase = "";
-        String fPhotoPath = "";
-                
         try {
-            app = new BioApp(configPath);
+            app = new BioApp(configFile);
             
-            File dir = new File(app.prop.fDatabasePath);
-            if (dir.exists()== false)
-                dir.mkdirs();
+            FilesLib.creteDir(app.prop.fDatabasePath);
+            FilesLib.creteDir(app.prop.fPhotoPath);
+ 
+            BioAppForm bioAppForm = new BioAppForm(
+                app.prop.getfDatabasePath(), 
+                app.prop.getfDatabasePath(),
+                app.prop.getfPreparePath());
             
-            fDatabase = app.prop.fDatabasePath + "\\" + app.prop.fDatabaseName;
-            fPhotoPath = app.prop.fPhotoPath;
-            
-            // Teste client
-            //BioAppClient client = new BioAppClient();
-            //System.out.print(
-            //        client.sendLog(
-            //                client.openConnection("localhost", 8888), fDatabase, "Claudio", "123"));
+        bioAppForm.setVisible(true);
         } catch (IOException ex) {
             Logger.getLogger(BioApp.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-        // Teste
-        BioAppForm bioAppForm = new BioAppForm(fDatabase, fPhotoPath);
-        bioAppForm.setVisible(true);
     }
-    
 }

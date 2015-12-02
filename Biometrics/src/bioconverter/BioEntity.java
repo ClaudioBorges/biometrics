@@ -276,6 +276,15 @@ public class BioEntity {
         return data;      
     }
     
+    public ResultSet getCandidatesCPF(PERSON_CREDENTIAL credential) throws SQLException {
+        String query = "SELECT cpf FROM People WHERE credential = \"" 
+                + credential.toString() + "\";";
+        
+        Statement fromStmt = this.conn.createStatement(); 
+        
+        return fromStmt.executeQuery(query);
+    }
+    
     public boolean isCandidate(String CPF) {
         return (getCredential(CPF) == PERSON_CREDENTIAL.CANDIDATE);
     }

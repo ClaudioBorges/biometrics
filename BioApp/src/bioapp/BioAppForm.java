@@ -12,6 +12,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.logging.Level;
@@ -28,6 +29,8 @@ import javax.swing.text.MaskFormatter;
  * @author Claudio
  */
 public class BioAppForm extends javax.swing.JFrame {
+    
+    private String preparePath = null;
     
     private PresidentEntity entity = null;
     private String photoPath;
@@ -48,6 +51,7 @@ public class BioAppForm extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu_Show;
     private javax.swing.JMenuBar jMenuBar;
     private javax.swing.JMenuItem jMenuItem_Exit;
+    private javax.swing.JMenuItem jMenuItem_PrepareCandidates;
     private javax.swing.JMenuItem jMenuItem_ShowDB;
     private javax.swing.JScrollPane jScroll_Usr;
     private javax.swing.JButton jBtn_Search;
@@ -58,14 +62,15 @@ public class BioAppForm extends javax.swing.JFrame {
      * @param logFilename
      * @param photoPath
      */
-    public BioAppForm(String logFilename, String photoPath) {
+    public BioAppForm(String logFilename, String photoPath, String preparePath) {
         try {
-            this.entity = new PresidentEntity(logFilename);
-            this.photoPath = photoPath;
+            this.entity         = new PresidentEntity(logFilename);
+            this.photoPath      = photoPath;
+            this.preparePath    = preparePath;
             
             initMyComponents();
             
-        } catch (ClassNotFoundException | SQLException ex) {
+        } catch (ClassNotFoundException | SQLException | IOException ex) {
             Logger.getLogger(BioAppForm.class.getName())
                     .log(Level.SEVERE, null, ex);
         }
@@ -82,6 +87,7 @@ public class BioAppForm extends javax.swing.JFrame {
         jMenuBar = new javax.swing.JMenuBar();
         jMenu_File = new javax.swing.JMenu();
         jMenuItem_Exit = new javax.swing.JMenuItem();
+        jMenuItem_PrepareCandidates = new javax.swing.JMenuItem();
         jMenu_Show = new javax.swing.JMenu();
         jMenuItem_ShowDB = new javax.swing.JMenuItem();
         
@@ -110,6 +116,14 @@ public class BioAppForm extends javax.swing.JFrame {
             }
         });
         jMenu_File.add(jMenuItem_Exit);
+        jMenuItem_PrepareCandidates.setText("Preparar candidatos");
+        jMenuItem_PrepareCandidates.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem_PrepareCandidatesActionPerformed(evt);
+            }
+        }); 
+        jMenu_File.add(jMenuItem_PrepareCandidates);
+        
         jMenuBar.add(jMenu_File);
         jMenu_Show.setText("Exibir");
         jMenuItem_ShowDB.setText("Dados de candidatos");
@@ -190,7 +204,15 @@ public class BioAppForm extends javax.swing.JFrame {
     
      private void jMenuItem_ExitActionPerformed(java.awt.event.ActionEvent evt) {                                               
         // TODO add your handling code here:
-    }                                              
+    }
+     
+    private void jMenuItem_PrepareCandidatesActionPerformed(java.awt.event.ActionEvent evt) {                                               
+        try {
+            this.entity.createFromDB(preparePath);
+        } catch (IOException ex) {
+            Logger.getLogger(BioAppForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
     private void jMenuItem_ShowDBActionPerformed(java.awt.event.ActionEvent evt) {                                                 
         if (entityView == null) {
@@ -271,6 +293,8 @@ public class BioAppForm extends javax.swing.JFrame {
                                     
                                     isEditingCandidate = false;
                                     setEnabledWorkingComponents(true);
+                                    
+                                    jSearchBtnActionPerformed(null);
                                 }
                             });
                             break;
@@ -293,6 +317,8 @@ public class BioAppForm extends javax.swing.JFrame {
                                     
                                     isEditingCandidate = false;
                                     setEnabledWorkingComponents(true);
+                                    
+                                    jSearchBtnActionPerformed(null);
                                 }
                             });
                             break;
@@ -315,6 +341,8 @@ public class BioAppForm extends javax.swing.JFrame {
                                     
                                     isEditingCandidate = false;
                                     setEnabledWorkingComponents(true);
+                                    
+                                    jSearchBtnActionPerformed(null);
                                 }
                             });
                             break;
@@ -404,7 +432,8 @@ public class BioAppForm extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(() -> {
             new BioAppForm(
                     "C:\\Teste\\BioPresidentLog.db", 
-                    "C:\\Teste\\")
+                    "C:\\Teste\\",
+                    "")
                     .setVisible(true);
         });
     }

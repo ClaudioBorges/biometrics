@@ -5,6 +5,10 @@
  */
 package bioapp;
 
+import bioconverter.BioEntity;
+import bioconverter.BioEntity.PERSON_CREDENTIAL;
+import java.io.File;
+import java.io.IOException;
 import static util.CPFLib.formatCPF_onlyNumbers;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -19,6 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONObject;
 import org.json.JSONArray;
+import util.FilesLib;
 
 /**
  *
@@ -39,12 +44,18 @@ public class PresidentEntity {
     private static final int F_PHOTO = 10;
     
     public PresidentEntity(String filename) 
-            throws ClassNotFoundException, SQLException {
+            throws ClassNotFoundException, SQLException, IOException {
+        
+        this.conn = getConnection(filename);
+        initDB();
+    }
+    
+    private Connection getConnection(String filename) 
+            throws IOException, ClassNotFoundException, SQLException {
+        FilesLib.creteDir(filename);
         
         Class.forName("org.sqlite.JDBC");
-        this.conn = DriverManager.getConnection("jdbc:sqlite:" + filename);
-
-        initDB();
+        return DriverManager.getConnection("jdbc:sqlite:" + filename);        
     }
     
     public void close() {
@@ -82,6 +93,27 @@ public class PresidentEntity {
         return dateFormat.format(date);
     }
 
+    public void createFromDB(String filename) throws IOException {
+        try {
+            
+            File file = new File(filename);
+            if ((file.isFile() && file.exists() && file.canRead()) == false)
+                throw new IOException();
+                        
+            BioEntity bioEntity = new BioEntity(filename);
+            ResultSet rs = bioEntity.getCandidatesCPF(PERSON_CREDENTIAL.CANDIDATE);
+            
+            while (rs.next()) {
+                String cpf = rs.getString(1);
+                
+                prepareCandidate(cpf);
+            }
+            
+        } catch (ClassNotFoundException | SQLException | IOException ex) {
+            throw new IOException("impossible to createFromDB: " + ex.toString());
+        }
+    }
+    
     public void prepareCandidate(String cpf) {        
         try {
             Date date = new Date();
@@ -434,7 +466,7 @@ public class PresidentEntity {
         return jsonObj;
     }
     
-    public static void main(String[] args) throws ClassNotFoundException, SQLException {
+    public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
         PresidentEntity log = new PresidentEntity("C:\\Teste\\BioPresidentLog.db");
         
         log.prepareCandidate("38502729829");
